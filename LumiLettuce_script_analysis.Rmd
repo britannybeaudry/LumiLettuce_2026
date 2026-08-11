@@ -114,7 +114,70 @@ This table compares the descriptive statistics of the continuous environmental v
 
 From this, we can gather that dissolved oxygen and pH are not worth investigating further because they are stable, but it would be interesting to look at how PAR, salinity, and temperature vary in response to site and diel phase.
 
-### 2. 
+### 2. Boxplots for continuous environmental variables
+
+The continuous environmental variables temperature, PAR, and salinity showed interesting variation in the table. These boxplots explore their variation across site and diel phase.
+
+```{r 02_boxplot_temp}
+
+# Remove NAs
+boxplot_env_data <- lumilettuce |>
+  distinct(sample_id, .keep_all = TRUE) |>
+  filter(!is.na(diel_phase), !is.na(site_name), !is.na(temp_degC), !is.na(salinity_psu), !is.na(PAR_umol_photons_m2_s)) |>
+  # To remove the water samples
+  filter(sample_type != "Water filter" | is.na(sample_type)) 
+
+# Boxplot for temperature
+boxplot_temp <- ggplot(boxplot_env_data, aes(x=diel_phase, y=temp_degC, fill=site_name, colour=site_name)) +
+  geom_boxplot(
+    alpha = 0.2, # opacity
+    outlier.shape = NA, # no need to show outliers
+    width = 0.5,
+    position=position_dodge(width=0.75)
+  ) +
+  # Add a diamond shape for the mean of each box
+  stat_summary(
+    aes(group = site_name),           
+    fun = mean,
+    geom = "point",
+    shape = 23,                       
+    size = 3.5,
+    colour = "black",                 
+    fill = "black",                  
+    position = position_dodge(width = 0.75)
+  ) +
+  geom_point(
+    position=position_jitterdodge(jitter.width=0.15, dodge.width=0.75),
+    size=2.5,
+    alpha=0.3,
+  ) +
+  # Teal for Pescalgarve and orchid for Ria de Alvor
+  scale_fill_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  scale_colour_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  theme_classic(base_size =12) +
+  labs(
+    x = "Diel Phase",
+    y = "Temperature (ºC)",
+    fill = "Site Name",
+    colour = "Site Name"
+  ) +
+  theme(
+    axis.title = element_text(face="bold"),
+    axis.text = element_text(colour="black"),
+    legend.position = "right",
+    lengend.title = element_text(face="bold")
+  )
+# Display temperature boxplot
+boxplot_temp
+
+
+
+
+```
+
+There are 9 observations for each box with 3 unique values for each. A black diamond symbolizing the mean was added to each box.
+
+At Pescalgarve
 
 ```{r 01_barplot}
 
