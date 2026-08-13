@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd("C:/Users/brita/OneDrive/Desktop/UAlg/thesis/LumiLettuce")
 ```
 
-# Descriptive Statistics
+# [LumiLettuce] Descriptive & Inferential Statistics
 
 ## I. Load libraries and inspect data set
 
@@ -44,15 +44,16 @@ head(lumilettuce)
 
 There are 24 columns and 18,988 rows in this data set. It includes both the microbiome data and the metadata. There are categorical and continuous variables.
 
-## II. Continuous variables
+## II. Abiotic environment
 
-### 1. Basic summary table
+### 1. Abiotic summary table
 
-Many of the metadata variables are continuous environmental parameters. They help us to understand the context. Some, could also be interesting to explore later on to see if there are correlations in the data associated with these continuous variables. This table will summarize and compare the continuous environmental variables across both sites: Pescalgarve and Ria de Alvor.
+Many of the metadata variables are continuous environmental parameters. They help us to understand the context. Some, could also be interesting to explore later on to see if there are correlations in the data associated with these continuous variables. This table compares the metrics (mean, standard deviation, median, interquartile range, minimum, and maximum) for the continuous environmental variables of the data set across all diel phases between the two sites. This helps us establish the baseline environmental conditions across sites and time of day.
 
 ```{r 01_summary_table}
 
 table_summary_continuous <- lumilettuce                                     |>
+  filter(!is.na(sample_id), !is.na(diel_phase), !is.na(site_name), !is.na(temp_degC), !is.na(salinity_psu), !is.na(dissolved_oxygen_mg_L), !is.na(pH), !is.na(PAR_umol_photons_m2_s))                                                    |>
   distinct(sample_id, .keep_all = TRUE)                                     |>
   pivot_longer(
     cols        = c(temp_degC, dissolved_oxygen_mg_L, pH, salinity_psu,      
@@ -71,29 +72,30 @@ table_summary_continuous <- lumilettuce                                     |>
     )                                                                       |>
   # There will be a top-header and a sub-header for site name and descriptive   
   # statistic variable, respectively
-  group_by(Variable, site_name)                                             |>
+  group_by(diel_phase, Variable, site_name)                                             |>
   summarise(
     Mean        = round(mean(Value, na.rm = TRUE), 2), 
     SD          = round(sd(Value, na.rm = TRUE), 2),
     Median      = round(median(Value, na.rm = TRUE), 2), 
     IQR         = round(IQR(Value, na.rm = TRUE), 2),
-    `Min - Max` = sprintf("%.2f - %.2f", min(Value, na.rm = TRUE), max(Value, na.rm                 = TRUE)),
+    `Min - Max` = sprintf("%.2f - %.2f", min(Value, na.rm = TRUE), max(Value, na.rm = TRUE)),
     .groups     = "drop")                                                   |>
   pivot_wider(
     names_from  = site_name,
     values_from = c(Mean, SD, Median, IQR, `Min - Max`),
     names_glue  = "{site_name}_{.value}")                                   |>
+ arrange(diel_phase, Variable)                                              |>
   select(
-    Variable,
-    Pescalgarve_Mean, Pescalgarve_SD, Pescalgarve_Median, Pescalgarve_IQR,   
-    `Pescalgarve_Min - Max`,
-    `Ria de Alvor_Mean`, `Ria de Alvor_SD`, `Ria de Alvor_Median`, `Ria de   
-     Alvor_IQR`, `Ria de Alvor_Min - Max`)
+    diel_phase, Variable,
+    Pescalgarve_Mean, Pescalgarve_SD, Pescalgarve_Median, Pescalgarve_IQR, `Pescalgarve_Min - Max`,
+    `Ria de Alvor_Mean`, `Ria de Alvor_SD`, `Ria de Alvor_Median`, `Ria de Alvor_IQR`, `Ria de Alvor_Min - Max`
+  )
 
 # This is not the final table
 View(table_summary_continuous)
 
 table_summary_continuous                                                    |>
+  select(-diel_phase)                                                       |>
   kbl(
     # Sub-headers for metrics
     col.names   = c("Variable", 
@@ -106,15 +108,19 @@ table_summary_continuous                                                    |>
     font_size   = 13)                                                       |>
   # Top header spanning across site groups
   add_header_above(c(" " = 1, "Pescalgarve" = 5, "Ria de Alvor" = 5))       |>
+  pack_rows("Dawn", 1, 5)                                                   |>
+  pack_rows("Noon", 6, 10)                                                  |>
+  pack_rows("Dusk", 11, 15)                                                 |>
+  pack_rows("Midnight", 16, 20)                                             |>
   
   # Save this table as a .png in correct folder in directory to add to manuscript
   save_kable(file = "../output/tables/table_summary_continuous.png", zoom = 3)
 
 ```
 
-This table compares the descriptive statistics of the continuous environmental variables between the two sites. Dissolved oxygen and pH are the only two variables that seem to remain rather constant across both sites. The other three variables show more variation. Pescalgarve has a much higher PAR maximum value than Ria de Alvor (1726.00 \> 909.00 µmol photons m^-2^ s^-1^). The salinity is more stable at the lagoon than at the fish farm which also is lower in comparison. In addition, the mean water temperature is lower at the fish farm than at Ria de Alvor (21.92 \< 27.95 ºC).
+When comparing between the two sites, we can already see that that the standard variation is 0 at all times for Ria de Alvor, which makes sense because there is a sample size n=1 for all site/diel phase combination. Dissolved oxygen (DO) and pH are quite similar in both sites. The largest differences for sites are pH, salinity, and PAR.
 
-From this, we can gather that dissolved oxygen and pH are not worth investigating further because they are stable, but it would be interesting to look at how PAR, salinity, and temperature vary in response to site and diel phase.
+DO, salinity, and pH remain stable across all time points. PAR varies a lot because it remains low at dawn, dusk, and midnight, with the lowest values at dawn, but then has a peak increase at noon. This pattern is consistent across both sites. Temperature appears to fluctuate slightly during the day.
 
 ### 2. Boxplots for continuous environmental variables
 
@@ -368,6 +374,10 @@ ggsave(
 
 The samples on the left side are the ones collected in Pescalgarve as denoted by the fist letter "P", and the samples on the right side are from Ria de Alvor as denoted by the first letter "R". The microbial community in Pescalgarve appears to be dominated by the *Cytophagales* and the *Flavobacteriales* orders. The *Pseudomonadales* order is also heavily present, although at a lesser degree than the other two previously mentionned. The microbial community in Ria de Alvor is widely dominated by *Pseudomonadales*. The orders *Enterobacterales* and *Cytophagales* are also dominant in some samples of Ria de Alvor. The order Chitinophagales is one of the major players in Pescalgarve but has a much smaller relative abundance in Ria de Alvor.
 
+### 2. Order stacked barplots by site and diel phase
+
+This barplot is looking at the relative abundance (%) of orders for each dile phase in both environments. It shows only the 10 dominant orders and the rest is categorized as "Other".
+
 ```{r 06_barplot_order_diel}
 
 order_data_diel <- lumilettuce                                                                          |>
@@ -436,6 +446,8 @@ ggsave(
 )
 
 ```
+
+From this, we can see that *Pseudomonadales* is the dominant order in Ria de Alvor at all diel phases. In Pescalgarve, *Flavobacteriales*, *Cytophagales*, and *Pseudomonadales* share the dominance at all diel phases. The mean relative abundance of each order appears to be relatively stable across all diel phases in both environments, with the exception of the order *Bacillales*. This order of bacteria is found in low levels at dawn, noon, and dusk, but they have a peak at midnight. Midnight is the time point of nocturnal respiration. This group is possibly recruited for their function in this metabolic process.
 
 ```{r 02_domtable}
 # 1. Prepare the Top 1 Genus data
@@ -536,11 +548,6 @@ top_genera <- microbiome |>
   slice_max(sum_count, n = 3)
 
 print(top_genera, n=27)
-```
-
-```{r 05_barplot_order}
-
-
 ```
 
 ```{r 05_pcoa_loc}
