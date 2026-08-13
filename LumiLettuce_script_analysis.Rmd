@@ -20,13 +20,14 @@ Load the necessary libraries and create path to tidy data set. Read the tidy dat
 
 library(tidyverse)
 library(plotly)
-library(ggplot2)    # to make figures
-library(kableExtra) # to make tables
+library(ggplot2)      # to make figures
+library(kableExtra)   # to make tables
 library(factoextra)
 library(patchwork)
 library(phyloseq)
 library(gt)
 library(ggsci)
+library(RColorBrewer) # to make figures
 
 # Use the function 'here' to create a path to tidy data set
 data_tidy_path <- here::here("data/processed") 
@@ -367,35 +368,72 @@ ggsave(
 
 The samples on the left side are the ones collected in Pescalgarve as denoted by the fist letter "P", and the samples on the right side are from Ria de Alvor as denoted by the first letter "R". The microbial community in Pescalgarve appears to be dominated by the *Cytophagales* and the *Flavobacteriales* orders. The *Pseudomonadales* order is also heavily present, although at a lesser degree than the other two previously mentionned. The microbial community in Ria de Alvor is widely dominated by *Pseudomonadales*. The orders *Enterobacterales* and *Cytophagales* are also dominant in some samples of Ria de Alvor. The order Chitinophagales is one of the major players in Pescalgarve but has a much smaller relative abundance in Ria de Alvor.
 
-```{r 01_barplot}
+```{r 06_barplot_order_diel}
 
-order_data2 <-  lumilettuce |>
-  group_by(sample_id, site_name, diel_phase, order) |>
-  summarise(total_count = sum(count), .groups = "drop") |>
-  group_by(sample_id) |>
-  mutate(rel_abund = (total_count / sum(total_count)) * 100) |>
-  ungroup() |>
-  mutate(order_top = fct_lump_n(order, n = 10, w = rel_abund)) |>
-  group_by(sample_id, site_name, diel_phase, order_top) |>
-  summarise(rel_abund = sum(rel_abund), .groups = "drop") |>
-  complete(sample_id, order_top, fill = list(rel_abund = 0)) |>
-  group_by(sample_id) |>
-  fill(site_name, diel_phase, .direction = "downup") |>
-  ungroup() |>
-  group_by(site_name, diel_phase, order_top) |>
-  summarise(mean_rel_abund = mean(rel_abund, na.rm = TRUE), .groups = "drop") |>
-  mutate(order_top = fct_reorder(order_top, mean_rel_abund, .fun = sum, .desc = TRUE)) |>
-  mutate(order_top = fct_relevel(order_top, "Other", after = Inf))
+order_data_diel <- lumilettuce                                                                          |>
+  # Remove the water samples, the community standard, and all NAs
+  filter(!is.na(site_name), !is.na(diel_phase))                                                         |>
+  filter((sample_id != "CM" & !str_ends(sample_id, regex("w", ignore_case = TRUE))) | is.na(sample_id)) |>
+  filter(sample_type != "Water filter" | is.na(sample_type))                                            |>
+  # Rename the NAs to Unassigned
+  mutate(order                    = replace_na(as.character(order), "Unassigned"))                      |>
+  # Calculate sample totals and relative abundance
+  group_by(sample_id, site_name, diel_phase, order)                                                     |>
+  summarise(total_count = sum(count), .groups = "drop")                                                 |>
+  group_by(sample_id)                                                                                   |>
+  mutate(rel_abund                = (total_count / sum(total_count)) * 100)                             |>
+  ungroup()                                                                                             |>
+  # Select 10 dominant orders and the rest is grouped under "Other" 
+  mutate(order_top                = fct_lump_n(order, n = 10, w = rel_abund, other_level = "Other"))    |>
+  group_by(sample_id, site_name, diel_phase, order_top)                                                 |>
+  summarise(rel_abund = sum(rel_abund), .groups = "drop")                                               |>
+  # Complete missing combinations per sample
+  complete(sample_id, order_top, fill = list(rel_abund = 0))                                            |>
+  group_by(sample_id)                                                                                   |>
+  fill(site_name, diel_phase, .direction = "downup")                                                    |>
+  ungroup()                                                                                             |>
+  # Calculate mean relative abundance per site and diel phase
+  group_by(site_name, diel_phase, order_top)                                                            |>
+  summarise(mean_rel_abund        = mean(rel_abund, na.rm = TRUE), .groups = "drop")                    |>
+  # Ensure each group adds up to 100%
+  group_by(site_name, diel_phase)                                                                       |>
+  mutate(mean_rel_abund           = (mean_rel_abund / sum(mean_rel_abund)) * 100)                       |>
+  ungroup()                                                                                             |>
+  # Ordering
+  mutate(
+    diel_phase                    = factor(diel_phase, levels = c("Midnight", "Dawn", "Noon", "Dusk")),
+    order_top                     = fct_reorder(order_top, mean_rel_abund, .fun = sum, .desc = TRUE),
+    order_top                     = fct_relevel(order_top, "Other", after = Inf)
+  )
 
-# 8. Plot
-ggplot(plot_data_summary, aes(x = diel_phase, y = mean_rel_abund, fill = order_top)) +
-  geom_col(position = "stack", color = "white", linewidth = 0.1) +
-  facet_wrap(~site_name) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25)) +
-  scale_fill_brewer(palette = "Paired") + 
-  theme_minimal() +
-  labs(y = "Mean Relative Abundance (%)", x = "Time of Day", fill= "Order")
+# Create the plot with ggplot2
+ggplot(order_data_diel, aes(x = diel_phase, y = mean_rel_abund, fill = order_top))         +
+  geom_col(position = "stack", color = "white", linewidth = 0.2, width = 0.8)              +
+  facet_wrap(~ site_name)                                                                  +
+  scale_y_continuous(limits = c(0, 100.1), expand = c(0, 0), breaks = seq(0, 100, 25))     +
+  scale_fill_brewer(palette       = "Paired")                                              + 
+  theme_minimal(base_size         = 12)                                                    +
+  labs(
+    y                             = "Mean Relative Abundance (%)", 
+    x                             = "Diel Phase", 
+    fill                          = "Order"
+  )                                                                                        +
+  theme(
+    axis.title                    = element_text(face = "bold"),
+    axis.text                     = element_text(color = "black"),
+    strip.text                    = element_text(face = "bold", size = 12),
+    legend.position               = "right",
+    legend.title                  = element_text(face = "bold")
+  )
 
+# Save the order barplot
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/barplot_order_diel.png",
+  width    = 8.5,
+  height   = 5.5,
+  dpi      = 300
+)
 
 ```
 
