@@ -1,102 +1,102 @@
 collection_date,season,diel_phase,site_name,sample_id,sample_type,morphotype,host_species,tide_state,sky_condition,precipitation,temp_degC,dissolved_oxygen_mg_L,pH,salinity_psu,PAR_umol_photons_m2_s
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb1,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.3,11.1,8.36,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb2,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.3,11.1,8.36,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb3,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.3,11.1,8.36,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb4,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.3,11.1,8.36,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb5,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.3,11.1,8.36,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb1,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.3,11.1,8.36,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb2,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.3,11.1,8.36,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb3,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.3,11.1,8.36,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb4,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.3,11.1,8.36,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnBb5,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.3,11.1,8.36,25,0
 2025-11-20,Autumn,Midnight,Pescalgarve,PMnNt1,Ulva,Narrow thalli,Ulva flexuosa,Flood,Clear,None,13.5,11,8.39,15,0
 2025-11-20,Autumn,Midnight,Pescalgarve,PMnNt2,Ulva,Narrow thalli,Ulva flexuosa,Flood,Clear,None,13.5,11,8.39,15,0
 2025-11-20,Autumn,Midnight,Pescalgarve,PMnNt3,Ulva,Narrow thalli,Ulva flexuosa,Flood,Clear,None,13.5,11,8.39,15,0
 2025-11-20,Autumn,Midnight,Pescalgarve,PMnNt4,Ulva,Narrow thalli,Ulva flexuosa,Flood,Clear,None,13.5,11,8.39,15,0
 2025-11-20,Autumn,Midnight,Pescalgarve,PMnNt5,Ulva,Narrow thalli,Ulva flexuosa,Flood,Clear,None,13.5,11,8.39,15,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl1,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,13.8,8.1,8.24,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl2,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,13.8,8.1,8.24,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl3,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,13.8,8.1,8.24,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl4,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,13.8,8.1,8.24,25,0
-2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl5,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,13.8,8.1,8.24,25,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb1,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb2,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb3,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb4,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb5,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnNt1,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnNt2,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-19,Autumn,Midnight,Ria de Alvor,RMnNt3,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl1,Ulva,Filamentous,Ulva aragoensis,Flood,Clear,None,13.8,8.1,8.24,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl2,Ulva,Filamentous,Ulva aragoensis,Flood,Clear,None,13.8,8.1,8.24,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl3,Ulva,Filamentous,Ulva aragoensis,Flood,Clear,None,13.8,8.1,8.24,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl4,Ulva,Filamentous,Ulva aragoensis,Flood,Clear,None,13.8,8.1,8.24,25,0
+2025-11-20,Autumn,Midnight,Pescalgarve,PMnFl5,Ulva,Filamentous,Ulva aragoensis,Flood,Clear,None,13.8,8.1,8.24,25,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb1,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb2,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb3,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb4,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnBb5,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnNt1,Ulva,Narrow thalli,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnNt2,Ulva,Narrow thalli,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
+2025-11-19,Autumn,Midnight,Ria de Alvor,RMnNt3,Ulva,Narrow thalli,Ulva lacinulata,Flood,Clear,None,17.2,9.48,8.38,27.5,0
 2025-11-19,Autumn,Midnight,Ria de Alvor,RMnFl1,Ulva,Filamentous,Ulva pouliotii,Flood,Clear,None,17.2,9.48,8.38,27.5,0
 2025-11-19,Autumn,Midnight,Ria de Alvor,RMnFl2,Ulva,Filamentous,Ulva pouliotii,Flood,Clear,None,17.2,9.48,8.38,27.5,0
 2025-11-19,Autumn,Midnight,Ria de Alvor,RMnFl3,Ulva,Filamentous,Ulva pouliotii,Flood,Clear,None,17.2,9.48,8.38,27.5,0
 2025-11-19,Autumn,Midnight,Ria de Alvor,RMnFl4,Ulva,Filamentous,Ulva pouliotii,Flood,Clear,None,17.2,9.48,8.38,27.5,0
 2025-11-19,Autumn,Midnight,Ria de Alvor,RMnFl5,Ulva,Filamentous,Ulva pouliotii,Flood,Clear,None,17.2,9.48,8.38,27.5,0
-2025-11-20,Autumn,Noon,Pescalgarve,PNnBb1,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.1,11.71,8.52,25.7,15
-2025-11-20,Autumn,Noon,Pescalgarve,PNnBb2,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.1,11.71,8.52,25.7,15
-2025-11-20,Autumn,Noon,Pescalgarve,PNnBb3,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.1,11.71,8.52,25.7,15
-2025-11-20,Autumn,Noon,Pescalgarve,PNnBb4,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.1,11.71,8.52,25.7,15
-2025-11-20,Autumn,Noon,Pescalgarve,PNnBb5,Ulva,Blade,Needs barcoding,Flood,Clear,None,12.1,11.71,8.52,25.7,15
-2025-11-20,Autumn,Noon,Pescalgarve,PNnNt1,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,13.7,11.61,8.57,26.5,706
-2025-11-20,Autumn,Noon,Pescalgarve,PNnNt2,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,13.7,11.61,8.57,26.5,706
-2025-11-20,Autumn,Noon,Pescalgarve,PNnNt3,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,13.7,11.61,8.57,26.5,706
-2025-11-20,Autumn,Noon,Pescalgarve,PNnNt4,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,13.7,11.61,8.57,26.5,706
-2025-11-20,Autumn,Noon,Pescalgarve,PNnNt5,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,13.7,11.61,8.57,26.5,706
+2025-11-20,Autumn,Noon,Pescalgarve,PNnBb1,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.1,11.71,8.52,25.7,15
+2025-11-20,Autumn,Noon,Pescalgarve,PNnBb2,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.1,11.71,8.52,25.7,15
+2025-11-20,Autumn,Noon,Pescalgarve,PNnBb3,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.1,11.71,8.52,25.7,15
+2025-11-20,Autumn,Noon,Pescalgarve,PNnBb4,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.1,11.71,8.52,25.7,15
+2025-11-20,Autumn,Noon,Pescalgarve,PNnBb5,Ulva,Blade,Ulva obscura,Flood,Clear,None,12.1,11.71,8.52,25.7,15
+2025-11-20,Autumn,Noon,Pescalgarve,PNnNt1,Ulva,Narrow thalli,NA,Flood,Clear,None,13.7,11.61,8.57,26.5,706
+2025-11-20,Autumn,Noon,Pescalgarve,PNnNt2,Ulva,Narrow thalli,NA,Flood,Clear,None,13.7,11.61,8.57,26.5,706
+2025-11-20,Autumn,Noon,Pescalgarve,PNnNt3,Ulva,Narrow thalli,NA,Flood,Clear,None,13.7,11.61,8.57,26.5,706
+2025-11-20,Autumn,Noon,Pescalgarve,PNnNt4,Ulva,Narrow thalli,NA,Flood,Clear,None,13.7,11.61,8.57,26.5,706
+2025-11-20,Autumn,Noon,Pescalgarve,PNnNt5,Ulva,Narrow thalli,NA,Flood,Clear,None,13.7,11.61,8.57,26.5,706
 2025-11-20,Autumn,Noon,Pescalgarve,PNnFl1,Ulva,Filamentous,Ulva flexuosa,Flood,Clear,None,15.1,7.49,8.45,14.7,1726
 2025-11-20,Autumn,Noon,Pescalgarve,PNnFl2,Ulva,Filamentous,Ulva flexuosa,Flood,Clear,None,15.1,7.49,8.45,14.7,1726
 2025-11-20,Autumn,Noon,Pescalgarve,PNnFl3,Ulva,Filamentous,Ulva flexuosa,Flood,Clear,None,15.1,7.49,8.45,14.7,1726
 2025-11-20,Autumn,Noon,Pescalgarve,PNnFl4,Ulva,Filamentous,Ulva flexuosa,Flood,Clear,None,15.1,7.49,8.45,14.7,1726
 2025-11-20,Autumn,Noon,Pescalgarve,PNnFl5,Ulva,Filamentous,Ulva flexuosa,Flood,Clear,None,15.1,7.49,8.45,14.7,1726
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb1,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb2,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb3,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb4,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb5,Ulva,Blade,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt1,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt2,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt3,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt4,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt5,Ulva,Narrow thalli,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl1,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl2,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl3,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl4,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl5,Ulva,Filamentous,Needs barcoding,Flood,Clear,None,17.7,10.46,8.44,28.3,909
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb1,Ulva,Blade,Needs barcoding,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb2,Ulva,Blade,Needs barcoding,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb3,Ulva,Blade,Needs barcoding,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb4,Ulva,Blade,Needs barcoding,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb5,Ulva,Blade,Needs barcoding,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt1,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt2,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt3,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt4,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
-2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt5,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb1,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb2,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb3,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb4,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnBb5,Ulva,Blade,Ulva lacinulata,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt1,Ulva,Narrow thalli,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt2,Ulva,Narrow thalli,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt3,Ulva,Narrow thalli,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt4,Ulva,Narrow thalli,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnNt5,Ulva,Narrow thalli,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl1,Ulva,Filamentous,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl2,Ulva,Filamentous,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl3,Ulva,Filamentous,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl4,Ulva,Filamentous,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Noon,Ria de Alvor,RNnFl5,Ulva,Filamentous,NA,Flood,Clear,None,17.7,10.46,8.44,28.3,909
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb1,Ulva,Blade,NA,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb2,Ulva,Blade,NA,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb3,Ulva,Blade,NA,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb4,Ulva,Blade,NA,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwBb5,Ulva,Blade,NA,Ebb,Clear,None,11.4,11.53,8.5,24.8,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt1,Ulva,Narrow thalli,NA,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt2,Ulva,Narrow thalli,NA,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt3,Ulva,Narrow thalli,NA,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt4,Ulva,Narrow thalli,NA,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
+2025-11-20,Autumn,Dawn,Pescalgarve,PDwNt5,Ulva,Narrow thalli,NA,Ebb,Clear,None,12.3,11.3,8.52,25.3,0
 2025-11-20,Autumn,Dawn,Pescalgarve,PDwFl1,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,14.1,7.24,8.15,14.7,0
 2025-11-20,Autumn,Dawn,Pescalgarve,PDwFl2,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,14.1,7.24,8.15,14.7,0
 2025-11-20,Autumn,Dawn,Pescalgarve,PDwFl3,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,14.1,7.24,8.15,14.7,0
 2025-11-20,Autumn,Dawn,Pescalgarve,PDwFl4,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,14.1,7.24,8.15,14.7,0
 2025-11-20,Autumn,Dawn,Pescalgarve,PDwFl5,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,14.1,7.24,8.15,14.7,0
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb1,Ulva,Blade,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb2,Ulva,Blade,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb3,Ulva,Blade,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb4,Ulva,Blade,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb5,Ulva,Blade,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt1,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt2,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt3,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt4,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt5,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl1,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl2,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl3,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl4,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl5,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb1,Ulva,Blade,Needs barcoding,Ebb,Clear,None,13.9,11.61,8.66,25,17
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb2,Ulva,Blade,Needs barcoding,Ebb,Clear,None,13.9,11.61,8.66,25,17
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb3,Ulva,Blade,Needs barcoding,Ebb,Clear,None,13.9,11.61,8.66,25,17
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb4,Ulva,Blade,Needs barcoding,Ebb,Clear,None,13.9,11.61,8.66,25,17
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb5,Ulva,Blade,Needs barcoding,Ebb,Clear,None,13.9,11.61,8.66,25,17
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt1,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt2,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt3,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt4,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
-2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt5,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb1,Ulva,Blade,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb2,Ulva,Blade,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb3,Ulva,Blade,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb4,Ulva,Blade,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwBb5,Ulva,Blade,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt1,Ulva,Narrow thalli,Ulva torta,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt2,Ulva,Narrow thalli,Ulva torta,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt3,Ulva,Narrow thalli,Ulva torta,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt4,Ulva,Narrow thalli,Ulva torta,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwNt5,Ulva,Narrow thalli,Ulva torta,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl1,Ulva,Filamentous,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl2,Ulva,Filamentous,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl3,Ulva,Filamentous,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl4,Ulva,Filamentous,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dawn,Ria de Alvor,RDwFl5,Ulva,Filamentous,NA,Ebb,Clear,None,16.3,8.99,8.35,27.7,5
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb1,Ulva,Blade,NA,Ebb,Clear,None,13.9,11.61,8.66,25,17
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb2,Ulva,Blade,NA,Ebb,Clear,None,13.9,11.61,8.66,25,17
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb3,Ulva,Blade,NA,Ebb,Clear,None,13.9,11.61,8.66,25,17
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb4,Ulva,Blade,NA,Ebb,Clear,None,13.9,11.61,8.66,25,17
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkBb5,Ulva,Blade,NA,Ebb,Clear,None,13.9,11.61,8.66,25,17
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt1,Ulva,Narrow thalli,NA,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt2,Ulva,Narrow thalli,NA,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt3,Ulva,Narrow thalli,NA,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt4,Ulva,Narrow thalli,NA,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
+2025-11-20,Autumn,Dusk,Pescalgarve,PDkNt5,Ulva,Narrow thalli,NA,Ebb,Clear,None,15.5,10.91,8.41,26.3,70
 2025-11-20,Autumn,Dusk,Pescalgarve,PDkFl1,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,15.4,10.33,8.34,15,87
 2025-11-20,Autumn,Dusk,Pescalgarve,PDkFl2,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,15.4,10.33,8.34,15,87
 2025-11-20,Autumn,Dusk,Pescalgarve,PDkFl3,Ulva,Filamentous,Ulva flexuosa,Ebb,Clear,None,15.4,10.33,8.34,15,87
@@ -107,15 +107,15 @@ collection_date,season,diel_phase,site_name,sample_id,sample_type,morphotype,hos
 2025-11-20,Autumn,Dusk,Ria de Alvor,RDkBb3,Ulva,Blade,Ulva lacinulata,Ebb,Clear,None,16,10.99,8.39,28.3,4
 2025-11-20,Autumn,Dusk,Ria de Alvor,RDkBb4,Ulva,Blade,Ulva lacinulata,Ebb,Clear,None,16,10.99,8.39,28.3,4
 2025-11-20,Autumn,Dusk,Ria de Alvor,RDkBb5,Ulva,Blade,Ulva lacinulata,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt1,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt2,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt3,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt4,Ulva,Narrow thalli,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl1,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl2,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl3,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl4,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
-2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl5,Ulva,Filamentous,Needs barcoding,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt1,Ulva,Narrow thalli,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt2,Ulva,Narrow thalli,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt3,Ulva,Narrow thalli,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkNt4,Ulva,Narrow thalli,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl1,Ulva,Filamentous,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl2,Ulva,Filamentous,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl3,Ulva,Filamentous,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl4,Ulva,Filamentous,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
+2025-11-20,Autumn,Dusk,Ria de Alvor,RDkFl5,Ulva,Filamentous,NA,Ebb,Clear,None,16,10.99,8.39,28.3,4
 2025-11-20,Autumn,Midnight,Pescalgarve,PMn1w,Water filter,NA,NA,Flood,Clear,None,13.5,11,8.39,15,0
 2025-11-20,Autumn,Midnight,Pescalgarve,PMn2w,Water filter,NA,NA,Flood,Clear,None,13.8,8.1,8.24,25,0
 2025-11-20,Autumn,Midnight,Pescalgarve,PMn3w,Water filter,NA,NA,Flood,Clear,None,12.3,11.1,8.36,25,0
