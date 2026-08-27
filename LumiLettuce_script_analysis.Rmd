@@ -22,8 +22,12 @@ library(tidyverse)
 library(plotly)
 library(ggplot2)      # to make figures
 library(kableExtra)   # to make tables
-library(factoextra)
+library(factoextra)   # to make PCA
 library(patchwork)
+library(car)          # Levene's test
+library(vegan)      # For diversity() function
+library(ggsignif)
+library(rstatix)
 library(phyloseq)
 library(gt)
 library(ggsci)
@@ -124,19 +128,18 @@ DO, salinity, and pH remain stable across all time points. PAR varies a lot beca
 
 ### 2. Boxplots for continuous environmental variables
 
-The continuous environmental variables temperature, PAR, and salinity showed interesting variation in the table. These boxplots explore their variation across site and diel phase.
+The continuous environmental variables temperature, PAR, and salinity showed interesting variation in the table. These boxplots explore the abiotic parameters and how they fluctuate in function of site and tiem of day. 
 
-```{r 02_boxplot_temp}
-
+```{r 02_boxplot_DO}
 # Remove NAs
 boxplot_env_data <- lumilettuce                                            |>
   distinct(sample_id, .keep_all = TRUE)                                    |>
-  filter(!is.na(diel_phase), !is.na(site_name), !is.na(temp_degC), !is.na(salinity_psu), !is.na(PAR_umol_photons_m2_s)) |>
+  filter(!is.na(diel_phase), !is.na(site_name), !is.na(dissolved_oxygen_mg_L), !is.na(PAR_umol_photons_m2_s), !is.na(salinity_psu), !is.na(temp_degC), !is.na(temp_degC)) |>
   # To remove the water samples
   filter(sample_type != "Water filter" | is.na(sample_type)) 
 
-# Boxplot for temperature
-boxplot_temp <- ggplot(boxplot_env_data, aes(x = diel_phase,y = temp_degC, fill = site_name, colour = site_name)) +
+# Boxplot for DO
+boxplot_DO <- ggplot(boxplot_env_data, aes(x = diel_phase,y = dissolved_oxygen_mg_L, fill = site_name, colour = site_name)) +
   geom_boxplot(
     alpha           = 0.2, # opacity
     outlier.shape   = NA, # no need to show outliers
@@ -165,7 +168,7 @@ boxplot_temp <- ggplot(boxplot_env_data, aes(x = diel_phase,y = temp_degC, fill 
   theme_classic(base_size =12) +
   labs(
     x               = "Diel Phase",
-    y               = "Temperature (ºC)",
+    y               = "Dissolved Oxygen (mg/L)",
     fill            = "Site Name",
     colour          = "Site Name"
   ) +
@@ -176,85 +179,25 @@ boxplot_temp <- ggplot(boxplot_env_data, aes(x = diel_phase,y = temp_degC, fill 
     lengend.title   = element_text(face="bold")
   )
 
-# Display temperature boxplot
-boxplot_temp
+# Display DO boxplot
+boxplot_DO
 
-# Save the temperature boxplot
+# Save the DO boxplot
 dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
 ggsave(
-  filename = "../output/figures/boxplot_temp.png",
+  filename = "../output/figures/boxplot_DO.png",
   width    = 8.5,
   height   = 5.5,
   dpi      = 300
 )
 
-```
 
+```
 There are 9 observations for each box with 3 unique values for each box of Pescalgarve. A black diamond symbolizing the mean was added to each box. Ria de Alvor only has 9 of the same measurements (repeated) for each diel phase.
 
-At Pescalgarve, the mean water temperature is at around 13ºC at midnight and then decreases at dawn before increasing steadily through noon reaching its peak at dusk. The Ria de Alvor has a different pattern. The mean water temperatures are higher than Pescalgarve with peaks greater tenmperatures at midnight and noon and lower temperatures at dawn and dusk.
+Pescalgarve has a slight increase in DO at dusk, whereas the other diel phases appear stable at around 10 mg/L. Ria de Alvor shows a greater increase at noon and dusk before going back down at midnight. Ria de Alvor varies between 9 and 11 mg/L.
 
-```{r 03_boxplot_salinity}
-
-# Boxplot for salinity
-boxplot_sal <- ggplot(boxplot_env_data, aes(x = diel_phase,y = salinity_psu, fill = site_name, colour = site_name)) +
-  geom_boxplot(
-    alpha           = 0.2, # opacity
-    outlier.shape   = NA, # no need to show outliers
-    width           = 0.5,
-    position        = position_dodge(width=0.75)
-  ) +
-  # Add a diamond shape for the mean of each box
-  stat_summary(
-    aes(group       = site_name),           
-    fun             = mean,
-    geom            = "point",
-    shape           = 23,                       
-    size            = 3.5,
-    colour          = "black",                 
-    fill            = "black",                  
-    position        = position_dodge(width = 0.75)
-  ) +
-  geom_point(
-    position        = position_jitterdodge(jitter.width =0.15, dodge.width=0.75),
-    size            = 2.5,
-    alpha           = 0.3,
-  ) +
-  # Teal for Pescalgarve and orchid for Ria de Alvor
-  scale_fill_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
-  scale_colour_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
-  theme_classic(base_size =12) +
-  labs(
-    x               = "Diel Phase",
-    y               = "Salinity (PSU)",
-    fill            = "Site Name",
-    colour          = "Site Name"
-  ) +
-  theme(
-    axis.title      = element_text(face="bold"),
-    axis.text       = element_text(colour="black"),
-    legend.position = "right",
-    lengend.title   = element_text(face="bold")
-  )
-
-# Display salinity boxplot
-boxplot_sal
-
-# Save the salinity boxplot
-dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
-ggsave(
-  filename = "../output/figures/boxplot_sal.png",
-  width    = 8.5,
-  height   = 5.5,
-  dpi      = 300
-)
-
-```
-
-The salinity in Pescalgarve is lower at all diel phases than at Ria de Alvor. Pescalgarve has a generally stable salinity with a slight increase at midday, remaining around 22.5 PSU. Ria de Alvor also has a stable salinity at around 28 PSU. In this case, the variation in salinity appears to be due to site differences, not diel phase.
-
-```{r 04_boxplot_PAR}
-
+```{r 03_boxplot_PAR}
 # Boxplot for PAR
 boxplot_PAR <- ggplot(boxplot_env_data, aes(x = diel_phase,y = PAR_umol_photons_m2_s, fill = site_name, colour = site_name)) +
   geom_boxplot(
@@ -313,7 +256,689 @@ ggsave(
 
 For the photosynthetically active radiation, the major variation appears to be due to diel phase. The values for Pescalgarve and Ria de Alvor are almost equivalent. They also are very similar at midnight, dawn, and dusk. The largest change occurs at noon where there is a drastic increase in PAR, which makes sense because that it the time of day when the sun is at its peak.
 
-## III. Categorical variables
+```{r 04_boxplot_salinity}
+
+# Boxplot for salinity
+boxplot_sal <- ggplot(boxplot_env_data, aes(x = diel_phase,y = salinity_psu, fill = site_name, colour = site_name)) +
+  geom_boxplot(
+    alpha           = 0.2, # opacity
+    outlier.shape   = NA, # no need to show outliers
+    width           = 0.5,
+    position        = position_dodge(width=0.75)
+  ) +
+  # Add a diamond shape for the mean of each box
+  stat_summary(
+    aes(group       = site_name),           
+    fun             = mean,
+    geom            = "point",
+    shape           = 23,                       
+    size            = 3.5,
+    colour          = "black",                 
+    fill            = "black",                  
+    position        = position_dodge(width = 0.75)
+  ) +
+  geom_point(
+    position        = position_jitterdodge(jitter.width =0.15, dodge.width=0.75),
+    size            = 2.5,
+    alpha           = 0.3,
+  ) +
+  # Teal for Pescalgarve and orchid for Ria de Alvor
+  scale_fill_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  scale_colour_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  theme_classic(base_size =12) +
+  labs(
+    x               = "Diel Phase",
+    y               = "Salinity (PSU)",
+    fill            = "Site Name",
+    colour          = "Site Name"
+  ) +
+  theme(
+    axis.title      = element_text(face="bold"),
+    axis.text       = element_text(colour="black"),
+    legend.position = "right",
+    lengend.title   = element_text(face="bold")
+  )
+
+# Display salinity boxplot
+boxplot_sal
+
+# Save the salinity boxplot
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/boxplot_sal.png",
+  width    = 8.5,
+  height   = 5.5,
+  dpi      = 300
+)
+```
+
+The salinity in Pescalgarve is lower at all diel phases than at Ria de Alvor. Pescalgarve has a generally stable salinity with a slight increase at midday, remaining around 22.5 PSU. Ria de Alvor also has a stable salinity at around 28 PSU. In this case, the variation in salinity appears to be due to site differences, not diel phase.
+
+```{r 05_boxplot_temp}
+
+# Boxplot for temperature
+boxplot_temp <- ggplot(boxplot_env_data, aes(x = diel_phase,y = temp_degC, fill = site_name, colour = site_name)) +
+  geom_boxplot(
+    alpha           = 0.2, # opacity
+    outlier.shape   = NA, # no need to show outliers
+    width           = 0.5,
+    position        = position_dodge(width=0.75)
+  ) +
+  # Add a diamond shape for the mean of each box
+  stat_summary(
+    aes(group       = site_name),           
+    fun             = mean,
+    geom            = "point",
+    shape           = 23,                       
+    size            = 3.5,
+    colour          = "black",                 
+    fill            = "black",                  
+    position        = position_dodge(width = 0.75)
+  ) +
+  geom_point(
+    position        = position_jitterdodge(jitter.width =0.15, dodge.width=0.75),
+    size            = 2.5,
+    alpha           = 0.3,
+  ) +
+  # Teal for Pescalgarve and orchid for Ria de Alvor
+  scale_fill_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  scale_colour_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  theme_classic(base_size =12) +
+  labs(
+    x               = "Diel Phase",
+    y               = "Temperature (ºC)",
+    fill            = "Site Name",
+    colour          = "Site Name"
+  ) +
+  theme(
+    axis.title      = element_text(face="bold"),
+    axis.text       = element_text(colour="black"),
+    legend.position = "right",
+    lengend.title   = element_text(face="bold")
+  )
+
+# Display temperature boxplot
+boxplot_temp
+
+# Save the temperature boxplot
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/boxplot_temp.png",
+  width    = 8.5,
+  height   = 5.5,
+  dpi      = 300
+)
+
+```
+
+At Pescalgarve, the mean water temperature is at around 13ºC at midnight and then decreases at dawn before increasing steadily through noon reaching its peak at dusk. The Ria de Alvor has a different pattern. The mean water temperatures are higher than Pescalgarve with peaks greater tenmperatures at midnight and noon and lower temperatures at dawn and dusk.
+
+```{r 06_boxplot_pH}
+# Boxplot for pH
+boxplot_pH <- ggplot(boxplot_env_data, aes(x = diel_phase,y = pH, fill = site_name, colour = site_name)) +
+  geom_boxplot(
+    alpha           = 0.2, # opacity
+    outlier.shape   = NA, # no need to show outliers
+    width           = 0.5,
+    position        = position_dodge(width=0.75)
+  ) +
+  # Add a diamond shape for the mean of each box
+  stat_summary(
+    aes(group       = site_name),           
+    fun             = mean,
+    geom            = "point",
+    shape           = 23,                       
+    size            = 3.5,
+    colour          = "black",                 
+    fill            = "black",                  
+    position        = position_dodge(width = 0.75)
+  ) +
+  geom_point(
+    position        = position_jitterdodge(jitter.width =0.15, dodge.width=0.75),
+    size            = 2.5,
+    alpha           = 0.3,
+  ) +
+  # Teal for Pescalgarve and orchid for Ria de Alvor
+  scale_fill_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  scale_colour_manual(values=c("Pescalgarve"="#008080", "Ria de Alvor"="#DA70D6")) +
+  theme_classic(base_size =12) +
+  labs(
+    x               = "Diel Phase",
+    y               = "pH",
+    fill            = "Site Name",
+    colour          = "Site Name"
+  ) +
+  theme(
+    axis.title      = element_text(face="bold"),
+    axis.text       = element_text(colour="black"),
+    legend.position = "right",
+    lengend.title   = element_text(face="bold")
+  )
+
+# Display pH boxplot
+boxplot_pH
+
+# Save the pH boxplot
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/boxplot_pH.png",
+  width    = 8.5,
+  height   = 5.5,
+  dpi      = 300
+)
+```
+
+Both sites seem to follow a similar pattern. With the exception of midnight, pH measurements are lower for Ria de Alvor than Pescalgarve. There is a slight increase at noon for both sites but the overall variability is very little for both sites. 
+
+### 3. Multifaceted boxplot abiotic variables
+
+This will generate one figure with all the abiotic variable boxplots and only show the legend once to avoid repetitions. 
+
+```{r 07_multipanel_environmental_boxplots}
+
+# Filter and clean the data
+boxplot_env_data <- lumilettuce                                                 |>
+  distinct(sample_id, .keep_all = TRUE)                                         |>
+  filter(
+    !is.na(diel_phase),
+    !is.na(site_name),
+    !is.na(dissolved_oxygen_mg_L),
+    !is.na(PAR_umol_photons_m2_s),
+    !is.na(salinity_psu),
+    !is.na(temp_degC),
+    !is.na(pH)
+  )                                                                             |>
+  filter(sample_type != "Water filter" | is.na(sample_type))
+
+# Generate standardized boxplots
+create_env_boxplot <- function(data, y_var, y_label) {
+  ggplot(data, aes(x = diel_phase, y = .data[[y_var]], fill = site_name, colour = site_name)) +
+    geom_boxplot(
+      alpha         = 0.2,
+      outlier.shape = NA,
+      width         = 0.5,
+      position      = position_dodge(width = 0.75)
+    ) +
+    stat_summary(
+      aes(group = site_name),
+      fun      = mean,
+      geom     = "point",
+      shape    = 23,
+      size     = 3.5,
+      colour   = "black",
+      fill     = "black",
+      position = position_dodge(width = 0.75)
+    ) +
+    geom_point(
+      position = position_jitterdodge(jitter.width = 0.15, dodge.width = 0.75),
+      size     = 2.5,
+      alpha    = 0.3
+    ) +
+    scale_fill_manual(values = c("Pescalgarve" = "#008080", "Ria de Alvor" = "#DA70D6")) +
+    scale_colour_manual(values = c("Pescalgarve" = "#008080", "Ria de Alvor" = "#DA70D6")) +
+    theme_classic(base_size = 12) +
+    labs(
+      x      = "Diel Phase",
+      y      = y_label,
+      fill   = "Site Name",
+      colour = "Site Name"
+    ) +
+    theme(
+      axis.title      = element_text(face = "bold"),
+      axis.text       = element_text(colour = "black"),
+      legend.title    = element_text(face = "bold", size = 25),
+      legend.text     = element_text(size = 20),
+      # Add a solid border, light background, and padding around the legend box
+      legend.box.background = element_rect(colour = "black", linewidth = 0.9, fill = "grey"),
+      legend.margin         = margin(t = 10, r = 12, b = 10, l = 12)
+    )
+}
+
+# Create the 5 individual subplots
+p_do   <- create_env_boxplot(boxplot_env_data, "dissolved_oxygen_mg_L", "Dissolved Oxygen (mg/L)")
+p_par  <- create_env_boxplot(boxplot_env_data, "PAR_umol_photons_m2_s", expression(bold(paste("PAR (", mu, "mol photons m"^-2*" s"^-1*")"))))
+p_sal  <- create_env_boxplot(boxplot_env_data, "salinity_psu", "Salinity (PSU)")
+p_temp <- create_env_boxplot(boxplot_env_data, "temp_degC", "Temperature (°C)")
+p_ph   <- create_env_boxplot(boxplot_env_data, "pH", "pH")
+
+# Assemble with patchwork
+# - guide_area() fills the 6th slot with the collected legend
+# - tag_levels supplies A-E for the 5 plots and leaves the 6th empty ("")
+multi_abiotic_boxplot <- (p_do + p_par + p_sal + p_temp + p_ph + guide_area()) +
+  plot_layout(
+    ncol   = 3,
+    nrow   = 2,
+    guides = "collect"
+  ) +
+  plot_annotation(
+    tag_levels = list(c("A", "B", "C", "D", "E", "")),
+    theme      = theme(
+      plot.tag = element_text(face = "bold", size = 14)
+    )
+  ) &
+  theme(
+    legend.position = "inside"
+  )
+
+print(multi_abiotic_boxplot)
+
+# Save
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/multipanel_environmental_boxplots.png",
+  plot     = multi_abiotic_boxplot,
+  width    = 13,
+  height   = 8.5,
+  dpi      = 300
+)
+```
+
+### 4. Mann-Whitney U test & Kruskal-Wallis
+
+First, I will verify whether my data is normally distributed for each environmental variable using the Shapiro-Wilk test. The null hypothesis (if the p-value is greater than 0.05) states that the data is normally distributed. Then, I will test for the homogeneity of variances. The null hypothesis states that the variances are equal across all groups. If the data is parametric, i will perform a Two-Way ANOVA. If not, I will perform a Mann-Whitney U Test for site_name (2 levels) and a Kruskall-Wallis for diel_phase (4 levels). I can then perform a Dunn test to see where the significant differences are. 
+
+```{r 08_abiotic_test}
+# Check for normality using Shapiro-Wilk test
+shapiro.test(boxplot_env_data$dissolved_oxygen_mg_L) # data is not normally distributed
+shapiro.test(boxplot_env_data$PAR_umol_photons_m2_s) # data is not normally distributed
+shapiro.test(boxplot_env_data$salinity_psu)          # data is not normally distributed
+shapiro.test(boxplot_env_data$temp_degC)             # data is not normally distributed
+shapiro.test(boxplot_env_data$pH)                    # data is not normally distributed
+
+# Create boxplots for both variables to see whether there are outliers
+boxplot(dissolved_oxygen_mg_L ~ diel_phase, data = boxplot_env_data) # outliers
+boxplot(dissolved_oxygen_mg_L ~ site_name, data = boxplot_env_data)  # no outliers
+
+boxplot(PAR_umol_photons_m2_s ~ diel_phase, data = boxplot_env_data) # outliers
+boxplot(PAR_umol_photons_m2_s ~ site_name, data = boxplot_env_data)  # outliers
+
+boxplot(salinity_psu ~ diel_phase, data = boxplot_env_data) # outliers
+boxplot(salinity_psu ~ site_name, data = boxplot_env_data)  #  no outliers
+
+boxplot(temp_degC ~ diel_phase, data = boxplot_env_data) # outliers
+boxplot(temp_degC ~ site_name, data = boxplot_env_data)  #  no outliers
+
+boxplot(pH ~ diel_phase, data = boxplot_env_data) # outliers
+boxplot(pH ~ site_name, data = boxplot_env_data)  #  no outliers
+
+# Perform Levene's test for homogeneity of variances
+# Use center = median if there are outliers (more robust)
+
+leveneTest(dissolved_oxygen_mg_L ~ diel_phase, data = boxplot_env_data, center = median) # not equal
+leveneTest(dissolved_oxygen_mg_L ~ site_name, data = boxplot_env_data, center = mean)  # not equal
+
+leveneTest(PAR_umol_photons_m2_s ~ diel_phase, data = boxplot_env_data, center = median) # not equal
+leveneTest(PAR_umol_photons_m2_s ~ site_name, data = boxplot_env_data, center = median) # equal
+
+leveneTest(salinity_psu ~ diel_phase, data = boxplot_env_data, center = median) # equal
+leveneTest(salinity_psu ~ site_name, data = boxplot_env_data, center = mean) # not equal
+
+leveneTest(temp_degC ~ diel_phase, data = boxplot_env_data, center = median) # not equal
+leveneTest(temp_degC ~ site_name, data = boxplot_env_data, center = mean) # not equal
+
+leveneTest(pH ~ diel_phase, data = boxplot_env_data, center = median) # equal
+leveneTest(pH ~ site_name, data = boxplot_env_data, center = mean) # not equal
+
+# Mann-Whitney U test for site_nmae
+wilcox.test(dissolved_oxygen_mg_L ~ site_name, data = boxplot_env_data, exact = FALSE) # significant diff
+wilcox.test(PAR_umol_photons_m2_s ~ site_name, data = boxplot_env_data, exact = FALSE) # no diff
+wilcox.test(salinity_psu ~ site_name, data = boxplot_env_data, exact = FALSE)          # significant diff
+wilcox.test(temp_degC ~ site_name, data = boxplot_env_data, exact = FALSE)             # significant diff
+wilcox.test(pH ~ site_name, data = boxplot_env_data, exact = FALSE)                    # significant diff
+
+# Kruskal-Wallis test for diel_phase
+kruskal.test(dissolved_oxygen_mg_L ~ diel_phase, data = boxplot_env_data)              # significant diff
+kruskal.test(PAR_umol_photons_m2_s ~ diel_phase, data = boxplot_env_data)              # significant diff
+kruskal.test(salinity_psu ~ diel_phase, data = boxplot_env_data)                       # no diff
+kruskal.test(temp_degC ~ diel_phase, data = boxplot_env_data)                          # no diff   
+kruskal.test(pH ~ diel_phase, data = boxplot_env_data)                                 # significant diff
+
+# Dunn test for significantly different variables
+dunn_test(dissolved_oxygen_mg_L ~ diel_phase, data = boxplot_env_data, p.adjust.method = "holm") # dawn and dusk
+dunn_test(PAR_umol_photons_m2_s ~ diel_phase, data = boxplot_env_data, p.adjust.method = "holm")
+dunn_test(pH ~ diel_phase, data = boxplot_env_data, p.adjust.method = "holm")
+
+```
+
+All the p-values for the Shapiro-Wilk test are smaller than 0.05, which means that I must reject the null hypothesis. This means that the data is not normally distributed. The homogeneity of variances also fails in most cases, meaning the data is non-parametric. The Mann-Whitney U test showed significant difference between both sites for all variables except PAR. 
+
+The Kruskal-Wallis test showed significant difference between diel phases for DO, PAR, and pH. 
+
+The Dunn test shows that the significant difference for DO is between dawn and dusk, which is consistent with the previous box plot. For PAR, the largest significant differences are between dawn and noon and noon and midnight, then between dusk and midnight, and finally between noon and dusk. For pH, the largest significant difference is between noon and midnight, then dawn and noon, and finally noon and dusk. 
+
+
+### 5. PCA abiotic variables
+
+This Principle component analysis (PCA) looks at the five (5) abiotic variables and the two sites. The direction and length of the arrows indicates how strongly each variable correlates with the axes and with each other. 
+
+```{r 09_pca_abiotic}
+
+# Define environmental variables
+env_vars <- c("dissolved_oxygen_mg_L", "PAR_umol_photons_m2_s", 
+              "salinity_psu", "temp_degC", "pH")
+
+# Filter complete cases
+pca_data <- boxplot_env_data |>
+  drop_na(all_of(env_vars), site_name)
+
+# Perform PCA (center = TRUE, scale. = TRUE is essential for mixed units)
+pca_env <- prcomp(pca_data[, env_vars], center = TRUE, scale. = TRUE)
+
+# Clean variable labels for vector arrows
+pretty_labels <- c(
+  "dissolved_oxygen_mg_L" = "DO",
+  "PAR_umol_photons_m2_s" = "PAR",
+  "salinity_psu"          = "Salinity",
+  "temp_degC"             = "Temp",
+  "pH"                    = "pH"
+)
+rownames(pca_env$rotation) <- pretty_labels[rownames(pca_env$rotation)]
+
+# Generate the PCA Biplot
+pca_abiotic <- fviz_pca_biplot(
+  pca_env,
+  title           = NULL,
+  geom.ind        = "point",
+  habillage       = pca_data$site_name,
+  palette         = c("Pescalgarve" = "#008080", "Ria de Alvor" = "#DA70D6"),
+  pointshape      = 19,
+  pointsize       = 3,
+  alpha.ind       = 0.7,
+  addEllipses     = TRUE,               # 95% concentration ellipses
+  ellipse.type    = "convex",           # "convex" polygon or "confidence" ellipse
+  ellipse.alpha   = 0.15,
+  col.var         = "black",            # Vector arrow styling
+  arrowsize       = 0.7,
+  repel           = TRUE,               # Avoid text label overlap
+  labelsize       = 4.5
+) +
+  labs(
+    color    = "Site Name",
+    fill     = "Site Name",
+    shape    = "Site Name"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.title      = element_text(face = "bold"),
+    axis.text       = element_text(colour = "black"),
+    legend.title    = element_text(face = "bold"),
+    legend.position = "right",
+    legend.box.background = element_rect(colour = "black", linewidth = 0.6, fill = "grey98"),
+    legend.margin   = margin(8, 10, 8, 10)
+  )
+
+print(pca_abiotic)
+
+# Save
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/pca_abiotic.png",
+  plot     = pca_abiotic,
+  width    = 8.5,
+  height   = 6.5,
+  dpi      = 300
+)
+```
+The first two principle components account for 67.3% of the total variance, which is adequate. The primary drivers of Dim1 (39.2%) are dissolved oxygen and pH. The primary drivers of Dim2 (28.1%) are temperature and salinity, with PAR also playing a smaller role. The samples from Pescalgarve clustered almost exclusively in the negative values of Dim2 which means that suggests that they are characterized by lower temperature and salinity. Ria de Alvor samples are fewer and clustered in the positive values of Dim2, characterized by higher temperatures and salinities. Pescalgarve samples also span across a wide range of Dim1 and Dim2 suggesting greater environmental variability than the tighter cluster of Ria de Alvor. This suggests Ria de Alvor has a more stable and homogeneous environment than Pescalgarve. 
+
+
+## III. Host vs. water specificity
+
+### 1. Taxonomic stacked barplot *Ulva* and seawater
+
+This is a broad taxonomic stacked barplot for the relative abundance between Ulva and seawater across sites. The bacteria are shown at the order level. This allows us to have a quick overview of which bacterial orders are found in both water filter samples and the seaweed, and which are unique to the seaweed host. 
+
+```{r 10_barplot_ulva_seawater}
+
+# Filter data for Bacteria, valid sites, and sample types (Ulva vs Seawater)
+bacteria_data <- lumilettuce |>
+  # Filter only Bacteria
+  filter(superkingdom == "Bacteria") |>
+  # Remove NAs and unassigned orders
+  filter(!is.na(order), order != "", order != "unknown", order != "Unclassified") |>
+  # Keep only valid sample types and sites
+  filter(sample_type %in% c("Ulva", "Water filter"), !is.na(site_name)) 
+
+
+# 2. Identify the Top 10 most abundant Bacterial Orders across the dataset
+top_10_orders <- bacteria_data |>
+  group_by(order) |>
+  summarise(total_count = sum(count, na.rm = TRUE), .groups = "drop") |>
+  slice_max(order_by = total_count, n = 10) |>
+  pull(order)
+
+# 3. Collapse lower-abundance orders into "Other" and calculate Relative Abundance (%)
+order_rel_abund <- bacteria_data |>
+  mutate(
+    order_grouped = if_else(order %in% top_10_orders, order, "Other (< 2%)")
+  ) |>
+  # Aggregate counts per Site, Sample Type, and Order
+  group_by(site_name, sample_type, order_grouped) |>
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop_last") |>
+  # Convert to relative abundance percentage (sums to 100% per bar)
+  mutate(relative_abundance = (count / sum(count)) * 100) |>
+  ungroup() |>
+  # Reorder factors so "Other" is at the bottom of the stack and dominant orders are on top
+  mutate(
+    order_grouped = factor(
+      order_grouped,
+      levels = c("Other (< 2%)", rev(top_10_orders))
+    )
+  )
+
+# 4. Custom distinct color palette (10 distinct colors + neutral grey for 'Other')
+custom_colors <- c(
+  "Other (< 2%)"       = "#D3D3D3",
+  "Pseudomonadales"    = "#1F77B4",
+  "Flavobacteriales"   = "#FF7F0E",
+  "Enterobacterales"   = "#2CA02C",
+  "Cytophagales"       = "#D62728",
+  "Chitinophagales"    = "#9467BD",
+  "Bacteroidales"      = "#8C564B",
+  "Rhodobacterales"    = "#E377C2",
+  "Caulobacterales"    = "#7F7F7F",
+  "Sphingobacteriales" = "#BCBD22",
+  "Bacillales"         = "#17BECF"
+)
+
+# 5. Create the Stacked Barplot
+barplot_ulva_seawater <- ggplot(order_rel_abund, aes(x = sample_type, y = relative_abundance, fill = order_grouped)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.65, colour = "black", linewidth = 0.25) +
+  facet_wrap(~site_name) +
+  scale_fill_manual(values = custom_colors, guide = guide_legend(reverse = TRUE)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.02)), labels = function(x) paste0(x, "%")) +
+  labs(
+    x    = "Sample Type",
+    y    = "Relative Abundance (%)",
+    fill = "Bacterial Order"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.title        = element_text(face = "bold"),
+    axis.text         = element_text(colour = "black", size = 11),
+    strip.text        = element_text(face = "bold", size = 12),
+    strip.background  = element_rect(colour = "black", fill = "grey93", linewidth = 0.6),
+    legend.title      = element_text(face = "bold", size = 11),
+    legend.text       = element_text(size = 10),
+    legend.position   = "right",
+    panel.spacing     = unit(1.5, "lines")
+  )
+
+# Display plot
+print(barplot_ulva_seawater)
+
+# 6. Save figure
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/barplot_ulva_seawater.png",
+  plot     = barplot_ulva_seawater,
+  width    = 9.5,
+  height   = 6,
+  dpi      = 300
+)
+
+
+```
+We can see from this barplot that the two dominant bacterial orders are Pseudomonadales and Flavobacteriales for both sample types at both sites. At Pescalgarve, the Ulva samples contain more Cytophagales than in the water filter sample. This suggests that Ulva recruits this order specifically. The same is seen in the samples collected at Ria de Alvor. In the seaweed sample of Ria de Alvor, we see less Flavobacteriales than in the water filter sample. The Pescalgarve seaweed sample also has more Chitinophagales than in the respective water filter sample. 
+
+### 2. Alpha diversity comparison
+
+```{r 11_alpha_diversity_ulva_vs_seawater}
+
+# Filter for valid sample types
+bact_data <- lumilettuce |>
+  filter(
+    sample_type %in% c("Ulva", "Water filter"),
+    !is.na(site_name),
+    !is.na(genus),
+    count > 0
+  ) 
+
+# Calculate Alpha Diversity Metrics per sample_id
+alpha_metrics <- bact_data |>
+  group_by(sample_id, sample_type, site_name, diel_phase) |>
+  summarise(
+    # Observed Richness (number of unique bacterial genera/taxa present)
+    Observed_Richness = n_distinct(genus),
+    
+    # Shannon Diversity Index (H')
+    Shannon = diversity(count, index = "shannon"),
+    
+    # Pielou's Evenness: J' = H' / ln(Richness)
+    Evenness = Shannon / log(Observed_Richness),
+    
+    .groups = "drop"
+  )
+
+# View calculated metrics
+print(alpha_metrics)
+
+
+# Function to buildsStandardized alpha diversity boxplots
+
+create_alpha_boxplot <- function(data, y_var, y_label) {
+  ggplot(data, aes(x = sample_type, y = .data[[y_var]], fill = sample_type, colour = sample_type)) +
+    geom_boxplot(
+      alpha         = 0.3,
+      outlier.shape = NA,
+      width         = 0.45,
+      colour        = "black",
+      linewidth     = 0.6
+    ) +
+    # Add diamond shape for the mean
+    stat_summary(
+      fun      = mean,
+      geom     = "point",
+      shape    = 23,
+      size     = 3.5,
+      colour   = "black",
+      fill     = "black"
+    ) +
+    # Jittered individual sample points
+    geom_jitter(
+      width = 0.15,
+      size  = 2.5,
+      alpha = 0.6
+    ) +
+    # Color scheme: Sea green for Ulva, Deep Ocean Blue for Seawater
+    scale_fill_manual(values = c("Ulva" = "#2E8B57", "Water filter" = "#4682B4")) +
+    scale_colour_manual(values = c("Ulva" = "#2E8B57", "Water filter" = "#4682B4")) +
+    theme_classic(base_size = 12) +
+    labs(
+      x      = "Sample Type",
+      y      = y_label,
+      fill   = "Sample Type",
+      colour = "Sample Type"
+    ) +
+    theme(
+      axis.title      = element_text(face = "bold"),
+      axis.text       = element_text(colour = "black", size = 11),
+      legend.position = "none" # Subplots don't need redundant legends
+    )
+}
+
+
+# ------------------------------------------------------------------------------
+# 4. Generate the 3 Individual Alpha Diversity Subplots
+# ------------------------------------------------------------------------------
+p_richness <- create_alpha_boxplot(alpha_metrics, "Observed_Richness", "Observed Genus Richness")
+p_shannon  <- create_alpha_boxplot(alpha_metrics, "Shannon", "Shannon Diversity Index (H')")
+p_evenness <- create_alpha_boxplot(alpha_metrics, "Evenness", "Pielou's Evenness (J')")
+
+
+
+
+# Faceted boxplot comparing Ulva vs Seawater across both sites
+create_faceted_alpha <- function(data, y_var, y_label) {
+  create_alpha_boxplot(data, y_var, y_label) +
+    facet_wrap(~site_name) +
+    theme(
+      strip.text       = element_text(face = "bold", size = 11),
+      strip.background = element_rect(colour = "black", fill = "grey93", linewidth = 0.5)
+    )
+}
+
+p_rich_site <- create_faceted_alpha(alpha_metrics, "Observed_Richness", "Observed Genus Richness")
+p_shan_site <- create_faceted_alpha(alpha_metrics, "Shannon", "Shannon Diversity Index (H')")
+p_even_site <- create_faceted_alpha(alpha_metrics, "Evenness", "Pielou's Evenness (J')")
+
+combined_site_alpha <- (p_rich_site / p_shan_site / p_even_site) +
+  plot_annotation(tag_levels = "A")
+
+print(combined_site_alpha)
+
+
+# ------------------------------------------------------------------------------
+# 6. Save Publication Figure
+# ------------------------------------------------------------------------------
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/alpha_diversity_ulva_vs_seawater.png",
+  plot     = combined_site_alpha,
+  width    = 8,
+  height   = 10,
+  dpi      = 300
+)
+```
+
+```{r 12_}
+
+shapiro.test(alpha_metrics$Observed_Richness) # not normally distributed
+shapiro.test(alpha_metrics$Shannon)           # not normally distributed
+shapiro.test(alpha_metrics$Evenness)          # not normally distributed
+
+boxplot(Observed_Richness ~ site_name, data = alpha_metrics) # outliers
+boxplot(Observed_Richness ~ sample_type, data = alpha_metrics) # outliers
+
+boxplot(Shannon ~ site_name, data = alpha_metrics) # outliers
+boxplot(Shannon ~ sample_type, data = alpha_metrics) # outliers
+               
+boxplot(Evenness ~ site_name, data = alpha_metrics) # outliers
+boxplot(Evenness ~ sample_type, data = alpha_metrics) # outliers
+# They all have outliers, so it is better to use the median as the center (more robust) for Levene's test
+
+leveneTest(Observed_Richness ~ site_name, data = alpha_metrics, center = median) # not homogeneous
+leveneTest(Observed_Richness ~ sample_type, data = alpha_metrics, center = median) # not homogeneous
+
+leveneTest(Shannon ~ site_name, data = alpha_metrics, center = median) # not homogeneous
+leveneTest(Shannon ~ sample_type, data = alpha_metrics, center = median) # homogeneous
+
+leveneTest(Evenness ~ site_name, data = alpha_metrics, center = median) # not homogeneous
+leveneTest(Evenness ~ sample_type, data = alpha_metrics, center = median) # homogeneous
+# The data is not parametric, Mann-Whitney U test must be performed
+
+wilcox.test(Observed_Richness ~ site_name, data = alpha_metrics, exact = FALSE) # no significant diff
+wilcox.test(Observed_Richness ~ sample_type, data = alpha_metrics, exact = FALSE) # no significant diff
+
+wilcox.test(Shannon ~ site_name, data = alpha_metrics, exact = FALSE) # no significant diff
+wilcox.test(Shannon ~ sample_type, data = alpha_metrics, exact = FALSE) # no significant diff
+
+wilcox.test(Evenness ~ site_name, data = alpha_metrics, exact = FALSE) # no significant diff
+wilcox.test(Evenness ~ sample_type, data = alpha_metrics, exact = FALSE) # no significant diff
+
+               
+```
+
 
 ### 1. Barplot of order relative abundance
 
@@ -376,7 +1001,7 @@ The samples on the left side are the ones collected in Pescalgarve as denoted by
 
 ### 2. Order stacked barplots by site and diel phase
 
-This barplot is looking at the relative abundance (%) of orders for each dile phase in both environments. It shows only the 10 dominant orders and the rest is categorized as "Other".
+This barplot is looking at the relative abundance (%) of orders for each diel phase in both environments. It shows only the 10 dominant orders and the rest is categorized as "Other".
 
 ```{r 06_barplot_order_diel}
 
