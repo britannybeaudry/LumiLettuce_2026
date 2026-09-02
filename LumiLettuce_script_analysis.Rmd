@@ -679,6 +679,7 @@ ggsave(
   dpi      = 300
 )
 ```
+
 The first two principle components account for 67.3% of the total variance, which is adequate. The primary drivers of Dim1 (39.2%) are dissolved oxygen and pH. The primary drivers of Dim2 (28.1%) are temperature and salinity, with PAR also playing a smaller role. The samples from Pescalgarve clustered almost exclusively in the negative values of Dim2 which means that suggests that they are characterized by lower temperature and salinity. Ria de Alvor samples are fewer and clustered in the positive values of Dim2, characterized by higher temperatures and salinities. Pescalgarve samples also span across a wide range of Dim1 and Dim2 suggesting greater environmental variability than the tighter cluster of Ria de Alvor. This suggests Ria de Alvor has a more stable and homogeneous environment than Pescalgarve. 
 
 
@@ -690,24 +691,20 @@ This is a broad taxonomic stacked barplot for the relative abundance between Ulv
 
 ```{r 10_barplot_ulva_seawater}
 
-# Filter data for Bacteria, valid sites, and sample types (Ulva vs Seawater)
+# Filter data for valid sites, and sample types (Ulva vs Seawater)
 bacteria_data <- lumilettuce |>
-  # Filter only Bacteria
-  filter(superkingdom == "Bacteria") |>
-  # Remove NAs and unassigned orders
   filter(!is.na(order), order != "", order != "unknown", order != "Unclassified") |>
-  # Keep only valid sample types and sites
   filter(sample_type %in% c("Ulva", "Water filter"), !is.na(site_name)) 
 
 
-# 2. Identify the Top 10 most abundant Bacterial Orders across the dataset
+# Identify the Top 10 most abundant bacterial Orders across the data set
 top_10_orders <- bacteria_data |>
   group_by(order) |>
   summarise(total_count = sum(count, na.rm = TRUE), .groups = "drop") |>
   slice_max(order_by = total_count, n = 10) |>
   pull(order)
 
-# 3. Collapse lower-abundance orders into "Other" and calculate Relative Abundance (%)
+# Collapse lower-abundance orders into "Other" and calculate Relative Abundance (%)
 order_rel_abund <- bacteria_data |>
   mutate(
     order_grouped = if_else(order %in% top_10_orders, order, "Other (< 2%)")
@@ -726,7 +723,7 @@ order_rel_abund <- bacteria_data |>
     )
   )
 
-# 4. Custom distinct color palette (10 distinct colors + neutral grey for 'Other')
+# Custom distinct color palette (10 distinct colors and neutral grey for 'Other')
 custom_colors <- c(
   "Other (< 2%)"       = "#D3D3D3",
   "Pseudomonadales"    = "#1F77B4",
@@ -738,10 +735,10 @@ custom_colors <- c(
   "Rhodobacterales"    = "#E377C2",
   "Caulobacterales"    = "#7F7F7F",
   "Sphingobacteriales" = "#BCBD22",
-  "Bacillales"         = "#17BECF"
+  "Burkholderiales"    = "#17BECF"
 )
 
-# 5. Create the Stacked Barplot
+# Create the stacked barplot
 barplot_ulva_seawater <- ggplot(order_rel_abund, aes(x = sample_type, y = relative_abundance, fill = order_grouped)) +
   geom_bar(stat = "identity", position = "stack", width = 0.65, colour = "black", linewidth = 0.25) +
   facet_wrap(~site_name) +
@@ -750,7 +747,7 @@ barplot_ulva_seawater <- ggplot(order_rel_abund, aes(x = sample_type, y = relati
   labs(
     x    = "Sample Type",
     y    = "Relative Abundance (%)",
-    fill = "Bacterial Order"
+    fill = "Microbial Order"
   ) +
   theme_classic(base_size = 12) +
   theme(
@@ -764,10 +761,10 @@ barplot_ulva_seawater <- ggplot(order_rel_abund, aes(x = sample_type, y = relati
     panel.spacing     = unit(1.5, "lines")
   )
 
-# Display plot
+
 print(barplot_ulva_seawater)
 
-# 6. Save figure
+
 dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
 ggsave(
   filename = "../output/figures/barplot_ulva_seawater.png",
@@ -779,9 +776,12 @@ ggsave(
 
 
 ```
+
 We can see from this barplot that the two dominant bacterial orders are Pseudomonadales and Flavobacteriales for both sample types at both sites. At Pescalgarve, the Ulva samples contain more Cytophagales than in the water filter sample. This suggests that Ulva recruits this order specifically. The same is seen in the samples collected at Ria de Alvor. In the seaweed sample of Ria de Alvor, we see less Flavobacteriales than in the water filter sample. The Pescalgarve seaweed sample also has more Chitinophagales than in the respective water filter sample. 
 
 ### 2. Alpha diversity comparison
+
+The alpha diversity analysis helps portray the bacterial community in both sites and in both sample types. Three comparisons are performed here: observed species richness, Shannon's diversity index (H'), and Pielou's evenness (J').
 
 ```{r 11_alpha_diversity_ulva_vs_seawater}
 
@@ -794,27 +794,20 @@ bact_data <- lumilettuce |>
     count > 0
   ) 
 
-# Calculate Alpha Diversity Metrics per sample_id
+# Calculate alpha diversity metrics per sample_id
 alpha_metrics <- bact_data |>
   group_by(sample_id, sample_type, site_name, diel_phase) |>
   summarise(
-    # Observed Richness (number of unique bacterial genera/taxa present)
     Observed_Richness = n_distinct(genus),
-    
-    # Shannon Diversity Index (H')
     Shannon = diversity(count, index = "shannon"),
-    
-    # Pielou's Evenness: J' = H' / ln(Richness)
     Evenness = Shannon / log(Observed_Richness),
-    
     .groups = "drop"
   )
 
-# View calculated metrics
 print(alpha_metrics)
 
 
-# Function to buildsStandardized alpha diversity boxplots
+# Build standardized alpha diversity box plots
 
 create_alpha_boxplot <- function(data, y_var, y_label) {
   ggplot(data, aes(x = sample_type, y = .data[[y_var]], fill = sample_type, colour = sample_type)) +
@@ -840,7 +833,7 @@ create_alpha_boxplot <- function(data, y_var, y_label) {
       size  = 2.5,
       alpha = 0.6
     ) +
-    # Color scheme: Sea green for Ulva, Deep Ocean Blue for Seawater
+    # Color scheme: green for Ulva, blue for seawater
     scale_fill_manual(values = c("Ulva" = "#2E8B57", "Water filter" = "#4682B4")) +
     scale_colour_manual(values = c("Ulva" = "#2E8B57", "Water filter" = "#4682B4")) +
     theme_classic(base_size = 12) +
@@ -853,22 +846,18 @@ create_alpha_boxplot <- function(data, y_var, y_label) {
     theme(
       axis.title      = element_text(face = "bold"),
       axis.text       = element_text(colour = "black", size = 11),
-      legend.position = "none" # Subplots don't need redundant legends
+      legend.position = "none" 
     )
 }
 
 
-# ------------------------------------------------------------------------------
-# 4. Generate the 3 Individual Alpha Diversity Subplots
-# ------------------------------------------------------------------------------
+# Generate the 3 individual alpha diversity subplots
 p_richness <- create_alpha_boxplot(alpha_metrics, "Observed_Richness", "Observed Genus Richness")
 p_shannon  <- create_alpha_boxplot(alpha_metrics, "Shannon", "Shannon Diversity Index (H')")
 p_evenness <- create_alpha_boxplot(alpha_metrics, "Evenness", "Pielou's Evenness (J')")
 
 
-
-
-# Faceted boxplot comparing Ulva vs Seawater across both sites
+# Faceted box plot comparing Ulva vs seawater across both sites
 create_faceted_alpha <- function(data, y_var, y_label) {
   create_alpha_boxplot(data, y_var, y_label) +
     facet_wrap(~site_name) +
@@ -888,9 +877,6 @@ combined_site_alpha <- (p_rich_site / p_shan_site / p_even_site) +
 print(combined_site_alpha)
 
 
-# ------------------------------------------------------------------------------
-# 6. Save Publication Figure
-# ------------------------------------------------------------------------------
 dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
 ggsave(
   filename = "../output/figures/alpha_diversity_ulva_vs_seawater.png",
@@ -901,7 +887,13 @@ ggsave(
 )
 ```
 
-```{r 12_}
+The observed genus richness appears to be similar between sample types from Pescalgarve, but not in Ria de Alvor. The Shannon diversity index appears to be the same for both sample types in Pescalgarve again, but a slight difference for the water filter samples at Ria de Alvor. The evenness seems very similar across sample type and site.
+
+### 3. Mann-Whiteny U Test
+
+First, I will verify whether my data is normally distributed for each environmental variable using the Shapiro-Wilk test. The null hypothesis (if the p-value is greater than 0.05) states that the data is normally distributed. Then, I will test for the homogeneity of variances. The null hypothesis states that the variances are equal across all groups. If the data is parametric, i will perform a Two-Way ANOVA. If not, I will perform a Mann-Whitney U Test for site_name (2 levels) and sample type (2 levels).
+
+```{r 12_mann_whitney_alpha}
 
 shapiro.test(alpha_metrics$Observed_Richness) # not normally distributed
 shapiro.test(alpha_metrics$Shannon)           # not normally distributed
@@ -939,40 +931,251 @@ wilcox.test(Evenness ~ sample_type, data = alpha_metrics, exact = FALSE) # no si
                
 ```
 
+They all have a p-value greater than 0.01. This means there is no significance difference in observed richness, Shannon diversity, or evenness between seaweed and water samples. 
+
+### 4. Principal Coordinates analysis
+
+This section investigates the beta diversity ordination of bacterial communities between Ulva and seawater across sites. These plots are based on abundance-weighed Bray-Curtis dissimilarity and incidence-based Jaccard distance.
+
+```{r 13_pcoa_ulva_water}
+
+# Prepare the data
+bact_clean <- lumilettuce |>
+  filter(
+    superkingdom == "Bacteria",
+    sample_type %in% c("Ulva", "Water filter"),
+    !is.na(site_name),
+    !is.na(genus),
+    count > 0
+  ) 
+
+# Extract sample-level metadata
+metadata <- bact_clean |>
+  distinct(sample_id, sample_type, site_name, diel_phase) |>
+  arrange(sample_id)
+
+comm_matrix <- bact_clean |>
+  # Sum duplicate genus counts per sample first
+  group_by(sample_id, genus) |>
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop") |>
+  # Pivot into wide format
+  pivot_wider(
+    names_from  = genus,
+    values_from = count,
+    values_fill = 0
+  ) |>
+  arrange(sample_id) |>
+  column_to_rownames("sample_id")
+
+# Ensure the metadata matches community matrix rows exactly
+metadata <- metadata |> filter(sample_id %in% rownames(comm_matrix))
+
+# Compute dissimilarity matrices & PCoA ordinations
+
+# Bray-Curtis (abundance-weighted)
+dist_bc <- vegdist(comm_matrix, method = "bray")
+pcoa_bc <- cmdscale(dist_bc, k = 2, eig = TRUE)
+
+var_bc_1 <- round((pcoa_bc$eig[1] / sum(pcoa_bc$eig[pcoa_bc$eig > 0])) * 100, 1)
+var_bc_2 <- round((pcoa_bc$eig[2] / sum(pcoa_bc$eig[pcoa_bc$eig > 0])) * 100, 1)
+
+df_pcoa_bc <- as.data.frame(pcoa_bc$points) |>
+  rownames_to_column("sample_id") |>
+  rename(PCoA1 = V1, PCoA2 = V2) |>
+  left_join(metadata, by = "sample_id")
+
+# Jaccard (presence-absence / incidence-based)
+dist_jacc <- vegdist(comm_matrix, method = "jaccard", binary = TRUE)
+pcoa_jacc <- cmdscale(dist_jacc, k = 2, eig = TRUE)
+
+var_jacc_1 <- round((pcoa_jacc$eig[1] / sum(pcoa_jacc$eig[pcoa_jacc$eig > 0])) * 100, 1)
+var_jacc_2 <- round((pcoa_jacc$eig[2] / sum(pcoa_jacc$eig[pcoa_jacc$eig > 0])) * 100, 1)
+
+df_pcoa_jacc <- as.data.frame(pcoa_jacc$points) |>
+  rownames_to_column("sample_id") |>
+  rename(PCoA1 = V1, PCoA2 = V2) |>
+  left_join(metadata, by = "sample_id")
+
+# Helper function to plot PCoA ordinations
+plot_pcoa <- function(df, var1, var2, dist_name) {
+  ggplot(df, aes(x = PCoA1, y = PCoA2, colour = sample_type, fill = sample_type, shape = site_name)) +
+    # 95% Normal Confidence Ellipses around Sample Types
+    stat_ellipse(
+      aes(group = sample_type),
+      geom  = "polygon",
+      alpha = 0.15,
+      type  = "t",
+      level = 0.95,
+      show.legend = FALSE
+    ) +
+    geom_point(size = 3.5, alpha = 0.85, stroke = 0.8) +
+    scale_colour_manual(values = c("Ulva" = "#006400", "Water filter" = "#008ECC")) +
+    scale_fill_manual(values = c("Ulva" = "#006400", "Water filter" = "#008ECC")) +
+    scale_shape_manual(values = c("Pescalgarve" = 16, "Ria de Alvor" = 17)) +
+    theme_classic(base_size = 12) +
+    labs(
+      title  = paste("PCoA -", dist_name),
+      x      = paste0("PCoA1 (", var1, "%)"),
+      y      = paste0("PCoA2 (", var2, "%)"),
+      colour = "Sample Type",
+      fill   = "Sample Type",
+      shape  = "Site Name"
+    ) +
+    theme(
+      plot.title      = element_text(face = "bold", size = 13, hjust = 0.5),
+      axis.title      = element_text(face = "bold"),
+      axis.text       = element_text(colour = "black"),
+      legend.title    = element_text(face = "bold"),
+      legend.position = "right",
+      legend.box.background = element_rect(colour = "black", linewidth = 0.5, fill = "grey98"),
+      legend.margin   = margin(6, 8, 6, 8)
+    )
+}
+
+# Generate individual PCoA plots
+p_bc   <- plot_pcoa(df_pcoa_bc, var_bc_1, var_bc_2, "Bray-Curtis Dissimilarity")
+p_jacc <- plot_pcoa(df_pcoa_jacc, var_jacc_1, var_jacc_2, "Jaccard Distance (Presence-Absence)")
+
+# Combine multi-panel figure & save
+combined_pcoa <- (p_bc + p_jacc) +
+  plot_layout(ncol = 2, guides = "collect") +
+  plot_annotation(
+    tag_levels = "A",
+    theme = theme(plot.tag = element_text(face = "bold", size = 14))
+  ) &
+  theme(legend.position = "bottom")
+
+
+print(combined_pcoa)
+
+
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+ggsave(
+  filename = "../output/figures/beta_diversity_pcoa_ulva_vs_seawater.png",
+  plot     = combined_pcoa,
+  width    = 12,
+  height   = 5.5,
+  dpi      = 300
+)
+```
+Thre is a lot of overlap in both plots. This suggests that the surrounding planktonic bacteria share core taxonomic members with the algal surface. The principal coordinates explain a low percentage of total community variance.
+
+
+### 5. PERMANOVA 
+
+This PERMANOVA tests whether community composition varied by sampling site and sample type between the water filter and seaweed samples. 
+
+```{r 14_permanova}
+
+bact_clean <- lumilettuce |>
+  filter(
+    superkingdom == "Bacteria",
+    sample_type %in% c("Ulva", "Water filter"),
+    !is.na(site_name),
+    !is.na(genus),
+    !genus %in% c("Unknown", "Unclassified", ""),
+    count > 0
+  ) 
+
+metadata <- bact_clean |>
+  distinct(sample_id, sample_type, site_name, diel_phase) |>
+  arrange(sample_id)
+
+# Create the community matrix with id_cols = sample_id
+comm_matrix <- bact_clean |>
+  group_by(sample_id, genus) |>
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(
+    id_cols     = sample_id,
+    names_from  = genus,
+    values_from = count,
+    values_fill = 0
+  ) |>
+  arrange(sample_id) |>
+  column_to_rownames("sample_id") |>
+  as.matrix() 
+
+# Check that it is purely numeric
+is.numeric(comm_matrix) # returns TRUE
+
+# Abundance-weighted Bray-Curtis
+dist_bray <- vegdist(comm_matrix, method = "bray")
+
+# Incidence-based Jaccard
+dist_jacc <- vegdist(comm_matrix, method = "jaccard", binary = TRUE)
+
+
+cat("\n=================== PERMANOVA: BRAY-CURTIS ===================\n")
+permanova_bray <- adonis2(
+  dist_bray ~ sample_type * site_name,
+  data         = metadata,
+  permutations = 999,
+  by           = "margin"
+)
+print(permanova_bray)
+
+cat("\n=================== PERMANOVA: JACCARD ===================\n")
+permanova_jacc <- adonis2(
+  dist_jacc ~ sample_type * site_name,
+  data         = metadata,
+  permutations = 999,
+  by           = "margin"
+)
+print(permanova_jacc)
+
+
+# Test homogeneity of multivariate dispersion (betadisper)
+# Tests if within-group variance differs (helps validate PERMANOVA results)
+
+cat("\n--- Dispersion Test: Sample Type (Bray-Curtis) ---\n")
+disp_type <- betadisper(dist_bray, metadata$sample_type)
+print(anova(disp_type))
+
+cat("\n--- Dispersion Test: Site Name (Bray-Curtis) ---\n")
+disp_site <- betadisper(dist_bray, metadata$site_name)
+print(anova(disp_site))
+
+# Visualize dispersions
+par(mfrow = c(1, 2))
+plot(disp_type, main = "Dispersion: Sample Type")
+plot(disp_site, main = "Dispersion: Site Name")
+par(mfrow = c(1, 1))
+```
+This means that the community composition varied significantly by sampling site and sample type. 
+
 
 ### 1. Barplot of order relative abundance
 
 The *Ulva*-associated microbiota has been characterized via Nanopore sequencing and subsequent software programs. The following barplot demonstrates the relative abundance of each order within each seaweed sample collected. This barplot shows the 15 most dominant orders of bacteria in all seaweed samples, the rest is denoted as "Others".
 
-```{r 05_barplot_order}
+```{r 05_barplot_order, include = FALSE}
 
-order_data <- lumilettuce                                                                               |>
-  # Filter out positive control "CM" and water samples ending in "w"
+order_data <- lumilettuce                                                             
   filter((sample_id != "CM" & !str_ends(sample_id, regex("w", ignore_case = TRUE))) | is.na(sample_id)) |>
   group_by(sample_id)                                                                                   |>
   mutate(sample_total          = sum(count))                                                            |>
   ungroup()                                                                                             |>
-  # Calculate percentage
+  
   mutate(rel_abund             = (count / sample_total) * 100)                                          |>
-  # Keep top 15 orders and group the rest into "Other"
+ 
   mutate(order_top             = fct_lump_n(order, n = 15, w = rel_abund, other_level = "Other"))       |>
-  # Group and summarize relative abundance per order_top
+
   group_by(sample_id, order_top)                                                                        |>
   summarise(rel_abund          = sum(rel_abund), .groups = "drop")                                      |>
-  # Format order_top factor levels (controls the legend order)
+  
   mutate(
     order_top                  = fct_reorder(order_top, rel_abund, .fun = sum, .desc = TRUE),
     order_top                  = fct_relevel(order_top, "Other", after = Inf)
   )                                                                                                     |>
-  # Place relative abundances in a decreasing order from bottom to top with "Other" completely at the bottom
+
   arrange(sample_id, order_top == "Other", rel_abund)                                                   |>
   mutate(stack_group           = fct_inorder(paste(sample_id, order_top, sep = "___"))
          )
 
-# Create the plot using ggplot2
+
 barplot_order <- ggplot(order_data, aes(x = sample_id, y = rel_abund, fill = order_top, group = stack_group)) +
   geom_col(width = 0.9) +
-  # This colour palette has high contrast and at least 15 colours
+ 
   scale_fill_d3("category20") + 
   theme_minimal() +
   labs(
@@ -984,10 +1187,10 @@ barplot_order <- ggplot(order_data, aes(x = sample_id, y = rel_abund, fill = ord
     axis.text.x                = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 6),
     legend.position            = "bottom"
   )
-# View the barplot
+
 barplot_order
 
-# Save the order barplot
+
 dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
 ggsave(
   filename = "../output/figures/barplot_order.png",
@@ -1003,38 +1206,36 @@ The samples on the left side are the ones collected in Pescalgarve as denoted by
 
 This barplot is looking at the relative abundance (%) of orders for each diel phase in both environments. It shows only the 10 dominant orders and the rest is categorized as "Other".
 
-```{r 06_barplot_order_diel}
+```{r 06_barplot_order_diel, include = FALSE}
 
 order_data_diel <- lumilettuce                                                                          |>
-  # Remove the water samples, the community standard, and all NAs
+  
   filter(!is.na(site_name), !is.na(diel_phase))                                                         |>
   filter((sample_id != "CM" & !str_ends(sample_id, regex("w", ignore_case = TRUE))) | is.na(sample_id)) |>
   filter(sample_type != "Water filter" | is.na(sample_type))                                            |>
-  # Rename the NAs to Unassigned
+  
   mutate(order                    = replace_na(as.character(order), "Unassigned"))                      |>
-  # Calculate sample totals and relative abundance
+ 
   group_by(sample_id, site_name, diel_phase, order)                                                     |>
   summarise(total_count = sum(count), .groups = "drop")                                                 |>
   group_by(sample_id)                                                                                   |>
   mutate(rel_abund                = (total_count / sum(total_count)) * 100)                             |>
   ungroup()                                                                                             |>
-  # Select 10 dominant orders and the rest is grouped under "Other" 
+
   mutate(order_top                = fct_lump_n(order, n = 10, w = rel_abund, other_level = "Other"))    |>
   group_by(sample_id, site_name, diel_phase, order_top)                                                 |>
   summarise(rel_abund = sum(rel_abund), .groups = "drop")                                               |>
-  # Complete missing combinations per sample
+
   complete(sample_id, order_top, fill = list(rel_abund = 0))                                            |>
   group_by(sample_id)                                                                                   |>
   fill(site_name, diel_phase, .direction = "downup")                                                    |>
-  ungroup()                                                                                             |>
-  # Calculate mean relative abundance per site and diel phase
+  ungroup()                                                                          
   group_by(site_name, diel_phase, order_top)                                                            |>
   summarise(mean_rel_abund        = mean(rel_abund, na.rm = TRUE), .groups = "drop")                    |>
-  # Ensure each group adds up to 100%
+
   group_by(site_name, diel_phase)                                                                       |>
   mutate(mean_rel_abund           = (mean_rel_abund / sum(mean_rel_abund)) * 100)                       |>
-  ungroup()                                                                                             |>
-  # Ordering
+  ungroup()                                                                          
   mutate(
     diel_phase                    = factor(diel_phase, levels = c("Midnight", "Dawn", "Noon", "Dusk")),
     order_top                     = fct_reorder(order_top, mean_rel_abund, .fun = sum, .desc = TRUE),
@@ -1061,7 +1262,7 @@ ggplot(order_data_diel, aes(x = diel_phase, y = mean_rel_abund, fill = order_top
     legend.title                  = element_text(face = "bold")
   )
 
-# Save the order barplot
+
 dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
 ggsave(
   filename = "../output/figures/barplot_order_diel.png",
@@ -1074,7 +1275,7 @@ ggsave(
 
 From this, we can see that *Pseudomonadales* is the dominant order in Ria de Alvor at all diel phases. In Pescalgarve, *Flavobacteriales*, *Cytophagales*, and *Pseudomonadales* share the dominance at all diel phases. The mean relative abundance of each order appears to be relatively stable across all diel phases in both environments, with the exception of the order *Bacillales*. This order of bacteria is found in low levels at dawn, noon, and dusk, but they have a peak at midnight. Midnight is the time point of nocturnal respiration. This group is possibly recruited for their function in this metabolic process.
 
-```{r 02_domtable}
+```{r 02_domtable, include = FALSE}
 # 1. Prepare the Top 1 Genus data
 top_1_genus_data <- df |>
   filter(sample_type == "Ulva") |>
@@ -1127,7 +1328,7 @@ top_1_genus_table <- top_1_genus_data |>
 top_1_genus_table
 ```
 
-```{r 02_boxplot}
+```{r 02_boxplot, include = FALSE}
 
 # 1. Filter and prepare the data
 richness_data <- microbiome3 |>  # Use your cleaned data frame
@@ -1164,7 +1365,7 @@ ggplot(richness_data, aes(x = diel_phase, y = richness, fill = site_name)) +
 
 ```
 
-```{r 03_genera_table}
+```{r 03_genera_table, include = FALSE}
 # Top 3 genera per site/phase
 top_genera <- microbiome |>
   group_by(site_name, diel_phase, genus) |>
@@ -1175,7 +1376,7 @@ top_genera <- microbiome |>
 print(top_genera, n=27)
 ```
 
-```{r 05_pcoa_loc}
+```{r 05_pcoa_loc, include = FALSE}
 # 1. Clean and Prepare
 df <- microbiome |> 
   filter(sample_type == "Ulva", site_name != "Unknown") |>
@@ -1249,7 +1450,7 @@ plot_ordination(ps, ps_pcoa, color = "site_name", shape = "diel_phase") +
      
 ```
 
-```{r 06_pcoa_pescalgarve}
+```{r 06_pcoa_pescalgarve, include = FALSE}
 # 1. Subset the phyloseq object to only include Pescalgarve
 ps_pesc <- subset_samples(ps, site_name == "Pescalgarve")
 
@@ -1300,7 +1501,7 @@ plot_ordination(ps_pesc, ps_pcoa_pesc, color = "diel_phase") +
   )
 ```
 
-```{r 07_pcoa_ria}
+```{r 07_pcoa_ria, include = FALSE}
 # 1. Subset the phyloseq object to only include Ria do Alvor
 ps_pesc <- subset_samples(ps, site_name == "Ria do Alvor")
 
@@ -1351,7 +1552,7 @@ plot_ordination(ps_pesc, ps_pcoa_pesc, color = "diel_phase") +
   )
 ```
 
-```{r 08_pcoa_morphotype}
+```{r 08_pcoa_morphotype, include =FALSE}
 
 # 1. Prepare Metadata (Ensuring 'morphotype' is included this time)
 s_data <- df |>
