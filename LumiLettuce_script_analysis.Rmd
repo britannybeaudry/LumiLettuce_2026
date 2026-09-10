@@ -2,7 +2,9 @@
 title: "LumiLettuce_metagenome"
 author: "Britanny Beaudry"
 date: "2026-05-12"
-output: pdf_document
+output:
+  word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -32,6 +34,8 @@ library(phyloseq)
 library(gt)
 library(ggsci)
 library(RColorBrewer) # to make figures
+library(ComplexHeatmap)
+library(circlize)
 
 # Use the function 'here' to create a path to tidy data set
 data_tidy_path <- here::here("data/processed") 
@@ -128,7 +132,7 @@ DO, salinity, and pH remain stable across all time points. PAR varies a lot beca
 
 ### 2. Boxplots for continuous environmental variables
 
-The continuous environmental variables temperature, PAR, and salinity showed interesting variation in the table. These boxplots explore the abiotic parameters and how they fluctuate in function of site and tiem of day. 
+The continuous environmental variables temperature, PAR, and salinity showed interesting variation in the table. These boxplots explore the abiotic parameters and how they fluctuate in function of site and tiem of day.
 
 ```{r 02_boxplot_DO}
 # Remove NAs
@@ -193,6 +197,7 @@ ggsave(
 
 
 ```
+
 There are 9 observations for each box with 3 unique values for each box of Pescalgarve. A black diamond symbolizing the mean was added to each box. Ria de Alvor only has 9 of the same measurements (repeated) for each diel phase.
 
 Pescalgarve has a slight increase in DO at dusk, whereas the other diel phases appear stable at around 10 mg/L. Ria de Alvor shows a greater increase at noon and dusk before going back down at midnight. Ria de Alvor varies between 9 and 11 mg/L.
@@ -428,11 +433,11 @@ ggsave(
 )
 ```
 
-Both sites seem to follow a similar pattern. With the exception of midnight, pH measurements are lower for Ria de Alvor than Pescalgarve. There is a slight increase at noon for both sites but the overall variability is very little for both sites. 
+Both sites seem to follow a similar pattern. With the exception of midnight, pH measurements are lower for Ria de Alvor than Pescalgarve. There is a slight increase at noon for both sites but the overall variability is very little for both sites.
 
 ### 3. Multifaceted boxplot abiotic variables
 
-This will generate one figure with all the abiotic variable boxplots and only show the legend once to avoid repetitions. 
+This will generate one figure with all the abiotic variable boxplots and only show the legend once to avoid repetitions.
 
 ```{r 07_multipanel_environmental_boxplots}
 
@@ -535,7 +540,7 @@ ggsave(
 
 ### 4. Mann-Whitney U test & Kruskal-Wallis
 
-First, I will verify whether my data is normally distributed for each environmental variable using the Shapiro-Wilk test. The null hypothesis (if the p-value is greater than 0.05) states that the data is normally distributed. Then, I will test for the homogeneity of variances. The null hypothesis states that the variances are equal across all groups. If the data is parametric, i will perform a Two-Way ANOVA. If not, I will perform a Mann-Whitney U Test for site_name (2 levels) and a Kruskall-Wallis for diel_phase (4 levels). I can then perform a Dunn test to see where the significant differences are. 
+First, I will verify whether my data is normally distributed for each environmental variable using the Shapiro-Wilk test. The null hypothesis (if the p-value is greater than 0.05) states that the data is normally distributed. Then, I will test for the homogeneity of variances. The null hypothesis states that the variances are equal across all groups. If the data is parametric, i will perform a Two-Way ANOVA. If not, I will perform a Mann-Whitney U Test for site_name (2 levels) and a Kruskall-Wallis for diel_phase (4 levels). I can then perform a Dunn test to see where the significant differences are.
 
 ```{r 08_abiotic_test}
 # Check for normality using Shapiro-Wilk test
@@ -600,16 +605,15 @@ dunn_test(pH ~ diel_phase, data = boxplot_env_data, p.adjust.method = "holm")
 
 ```
 
-All the p-values for the Shapiro-Wilk test are smaller than 0.05, which means that I must reject the null hypothesis. This means that the data is not normally distributed. The homogeneity of variances also fails in most cases, meaning the data is non-parametric. The Mann-Whitney U test showed significant difference between both sites for all variables except PAR. 
+All the p-values for the Shapiro-Wilk test are smaller than 0.05, which means that I must reject the null hypothesis. This means that the data is not normally distributed. The homogeneity of variances also fails in most cases, meaning the data is non-parametric. The Mann-Whitney U test showed significant difference between both sites for all variables except PAR.
 
-The Kruskal-Wallis test showed significant difference between diel phases for DO, PAR, and pH. 
+The Kruskal-Wallis test showed significant difference between diel phases for DO, PAR, and pH.
 
-The Dunn test shows that the significant difference for DO is between dawn and dusk, which is consistent with the previous box plot. For PAR, the largest significant differences are between dawn and noon and noon and midnight, then between dusk and midnight, and finally between noon and dusk. For pH, the largest significant difference is between noon and midnight, then dawn and noon, and finally noon and dusk. 
-
+The Dunn test shows that the significant difference for DO is between dawn and dusk, which is consistent with the previous box plot. For PAR, the largest significant differences are between dawn and noon and noon and midnight, then between dusk and midnight, and finally between noon and dusk. For pH, the largest significant difference is between noon and midnight, then dawn and noon, and finally noon and dusk.
 
 ### 5. PCA abiotic variables
 
-This Principle component analysis (PCA) looks at the five (5) abiotic variables and the two sites. The direction and length of the arrows indicates how strongly each variable correlates with the axes and with each other. 
+This Principle component analysis (PCA) looks at the five (5) abiotic variables and the two sites. The direction and length of the arrows indicates how strongly each variable correlates with the axes and with each other.
 
 ```{r 09_pca_abiotic}
 
@@ -680,14 +684,13 @@ ggsave(
 )
 ```
 
-The first two principle components account for 67.3% of the total variance, which is adequate. The primary drivers of Dim1 (39.2%) are dissolved oxygen and pH. The primary drivers of Dim2 (28.1%) are temperature and salinity, with PAR also playing a smaller role. The samples from Pescalgarve clustered almost exclusively in the negative values of Dim2 which means that suggests that they are characterized by lower temperature and salinity. Ria de Alvor samples are fewer and clustered in the positive values of Dim2, characterized by higher temperatures and salinities. Pescalgarve samples also span across a wide range of Dim1 and Dim2 suggesting greater environmental variability than the tighter cluster of Ria de Alvor. This suggests Ria de Alvor has a more stable and homogeneous environment than Pescalgarve. 
-
+The first two principle components account for 67.3% of the total variance, which is adequate. The primary drivers of Dim1 (39.2%) are dissolved oxygen and pH. The primary drivers of Dim2 (28.1%) are temperature and salinity, with PAR also playing a smaller role. The samples from Pescalgarve clustered almost exclusively in the negative values of Dim2 which means that suggests that they are characterized by lower temperature and salinity. Ria de Alvor samples are fewer and clustered in the positive values of Dim2, characterized by higher temperatures and salinities. Pescalgarve samples also span across a wide range of Dim1 and Dim2 suggesting greater environmental variability than the tighter cluster of Ria de Alvor. This suggests Ria de Alvor has a more stable and homogeneous environment than Pescalgarve.
 
 ## III. Host vs. water specificity
 
 ### 1. Taxonomic stacked barplot *Ulva* and seawater
 
-This is a broad taxonomic stacked barplot for the relative abundance between Ulva and seawater across sites. The bacteria are shown at the order level. This allows us to have a quick overview of which bacterial orders are found in both water filter samples and the seaweed, and which are unique to the seaweed host. 
+This is a broad taxonomic stacked barplot for the relative abundance between Ulva and seawater across sites. The bacteria are shown at the order level. This allows us to have a quick overview of which bacterial orders are found in both water filter samples and the seaweed, and which are unique to the seaweed host.
 
 ```{r 10_barplot_ulva_seawater}
 
@@ -777,7 +780,7 @@ ggsave(
 
 ```
 
-We can see from this barplot that the two dominant bacterial orders are Pseudomonadales and Flavobacteriales for both sample types at both sites. At Pescalgarve, the Ulva samples contain more Cytophagales than in the water filter sample. This suggests that Ulva recruits this order specifically. The same is seen in the samples collected at Ria de Alvor. In the seaweed sample of Ria de Alvor, we see less Flavobacteriales than in the water filter sample. The Pescalgarve seaweed sample also has more Chitinophagales than in the respective water filter sample. 
+We can see from this barplot that the two dominant bacterial orders are Pseudomonadales and Flavobacteriales for both sample types at both sites. At Pescalgarve, the Ulva samples contain more Cytophagales than in the water filter sample. This suggests that Ulva recruits this order specifically. The same is seen in the samples collected at Ria de Alvor. In the seaweed sample of Ria de Alvor, we see less Flavobacteriales than in the water filter sample. The Pescalgarve seaweed sample also has more Chitinophagales than in the respective water filter sample.
 
 ### 2. Alpha diversity comparison
 
@@ -931,7 +934,7 @@ wilcox.test(Evenness ~ sample_type, data = alpha_metrics, exact = FALSE) # no si
                
 ```
 
-They all have a p-value greater than 0.01. This means there is no significance difference in observed richness, Shannon diversity, or evenness between seaweed and water samples. 
+They all have a p-value greater than 0.01. This means there is no significance difference in observed richness, Shannon diversity, or evenness between seaweed and water samples.
 
 ### 4. Principal Coordinates analysis
 
@@ -1058,12 +1061,12 @@ ggsave(
   dpi      = 300
 )
 ```
+
 Thre is a lot of overlap in both plots. This suggests that the surrounding planktonic bacteria share core taxonomic members with the algal surface. The principal coordinates explain a low percentage of total community variance.
 
+### 5. PERMANOVA
 
-### 5. PERMANOVA 
-
-This PERMANOVA tests whether community composition varied by sampling site and sample type between the water filter and seaweed samples. 
+This PERMANOVA tests whether community composition varied by sampling site and sample type between the water filter and seaweed samples.
 
 ```{r 14_permanova}
 
@@ -1141,106 +1144,61 @@ plot(disp_type, main = "Dispersion: Sample Type")
 plot(disp_site, main = "Dispersion: Site Name")
 par(mfrow = c(1, 1))
 ```
-This means that the community composition varied significantly by sampling site and sample type. 
 
+This means that the community composition varied significantly by sampling site and sample type.
 
-### 1. Barplot of order relative abundance
+## IV. Diel & spatial dynamics of Ulva microbiome
 
-The *Ulva*-associated microbiota has been characterized via Nanopore sequencing and subsequent software programs. The following barplot demonstrates the relative abundance of each order within each seaweed sample collected. This barplot shows the 15 most dominant orders of bacteria in all seaweed samples, the rest is denoted as "Others".
-
-```{r 05_barplot_order, include = FALSE}
-
-order_data <- lumilettuce                                                             
-  filter((sample_id != "CM" & !str_ends(sample_id, regex("w", ignore_case = TRUE))) | is.na(sample_id)) |>
-  group_by(sample_id)                                                                                   |>
-  mutate(sample_total          = sum(count))                                                            |>
-  ungroup()                                                                                             |>
-  
-  mutate(rel_abund             = (count / sample_total) * 100)                                          |>
- 
-  mutate(order_top             = fct_lump_n(order, n = 15, w = rel_abund, other_level = "Other"))       |>
-
-  group_by(sample_id, order_top)                                                                        |>
-  summarise(rel_abund          = sum(rel_abund), .groups = "drop")                                      |>
-  
-  mutate(
-    order_top                  = fct_reorder(order_top, rel_abund, .fun = sum, .desc = TRUE),
-    order_top                  = fct_relevel(order_top, "Other", after = Inf)
-  )                                                                                                     |>
-
-  arrange(sample_id, order_top == "Other", rel_abund)                                                   |>
-  mutate(stack_group           = fct_inorder(paste(sample_id, order_top, sep = "___"))
-         )
-
-
-barplot_order <- ggplot(order_data, aes(x = sample_id, y = rel_abund, fill = order_top, group = stack_group)) +
-  geom_col(width = 0.9) +
- 
-  scale_fill_d3("category20") + 
-  theme_minimal() +
-  labs(
-    x                          = "Sample ID",
-    y                          = "Relative Abundance (%)",
-    fill                       = "Order"
-  ) +
-  theme(
-    axis.text.x                = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 6),
-    legend.position            = "bottom"
-  )
-
-barplot_order
-
-
-dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
-ggsave(
-  filename = "../output/figures/barplot_order.png",
-  width    = 8.5,
-  height   = 5.5,
-  dpi      = 300
-)
-```
-
-The samples on the left side are the ones collected in Pescalgarve as denoted by the fist letter "P", and the samples on the right side are from Ria de Alvor as denoted by the first letter "R". The microbial community in Pescalgarve appears to be dominated by the *Cytophagales* and the *Flavobacteriales* orders. The *Pseudomonadales* order is also heavily present, although at a lesser degree than the other two previously mentionned. The microbial community in Ria de Alvor is widely dominated by *Pseudomonadales*. The orders *Enterobacterales* and *Cytophagales* are also dominant in some samples of Ria de Alvor. The order Chitinophagales is one of the major players in Pescalgarve but has a much smaller relative abundance in Ria de Alvor.
-
-### 2. Order stacked barplots by site and diel phase
+### 1. Order stacked barplots by site and diel phase
 
 This barplot is looking at the relative abundance (%) of orders for each diel phase in both environments. It shows only the 10 dominant orders and the rest is categorized as "Other".
 
-```{r 06_barplot_order_diel, include = FALSE}
+```{r 15_barplot_order_diel}
 
-order_data_diel <- lumilettuce                                                                          |>
-  
-  filter(!is.na(site_name), !is.na(diel_phase))                                                         |>
-  filter((sample_id != "CM" & !str_ends(sample_id, regex("w", ignore_case = TRUE))) | is.na(sample_id)) |>
-  filter(sample_type != "Water filter" | is.na(sample_type))                                            |>
-  
-  mutate(order                    = replace_na(as.character(order), "Unassigned"))                      |>
- 
-  group_by(sample_id, site_name, diel_phase, order)                                                     |>
-  summarise(total_count = sum(count), .groups = "drop")                                                 |>
-  group_by(sample_id)                                                                                   |>
-  mutate(rel_abund                = (total_count / sum(total_count)) * 100)                             |>
-  ungroup()                                                                                             |>
+ulva_clean <- lumilettuce |>
+  filter(
+    !is.na(site_name), 
+    !is.na(diel_phase),
+    sample_type == "Ulva" | (sample_type != "Water filter" & !str_ends(sample_id, regex("w", ignore_case = TRUE))),
+    sample_id != "CM"
+  ) |>
+  mutate(order = replace_na(as.character(order), "Unassigned"))
 
-  mutate(order_top                = fct_lump_n(order, n = 10, w = rel_abund, other_level = "Other"))    |>
-  group_by(sample_id, site_name, diel_phase, order_top)                                                 |>
-  summarise(rel_abund = sum(rel_abund), .groups = "drop")                                               |>
+# Identify the top 10 bacterial orders across all samples
+top_10_orders <- ulva_clean |>
+  group_by(order) |>
+  summarise(total = sum(count, na.rm = TRUE), .groups = "drop") |>
+  filter(order != "Unassigned") |>
+  slice_max(order_by = total, n = 10) |>
+  pull(order)
 
-  complete(sample_id, order_top, fill = list(rel_abund = 0))                                            |>
-  group_by(sample_id)                                                                                   |>
-  fill(site_name, diel_phase, .direction = "downup")                                                    |>
-  ungroup()                                                                          
-  group_by(site_name, diel_phase, order_top)                                                            |>
-  summarise(mean_rel_abund        = mean(rel_abund, na.rm = TRUE), .groups = "drop")                    |>
-
-  group_by(site_name, diel_phase)                                                                       |>
-  mutate(mean_rel_abund           = (mean_rel_abund / sum(mean_rel_abund)) * 100)                       |>
-  ungroup()                                                                          
+order_data_diel <- ulva_clean |>
+  mutate(order_top = if_else(order %in% top_10_orders, order, "Other")) |>
+  # Sum counts per sample and order
+  group_by(sample_id, site_name, diel_phase, order_top) |>
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop_last") |>
+  # Compute relative abundance (%) per sample
+  mutate(rel_abund = (count / sum(count)) * 100) |>
+  ungroup() |>
+  # Fill in zeros for unobserved orders per sample while preserving site and phase
+  complete(
+    nesting(sample_id, site_name, diel_phase),
+    order_top,
+    fill = list(count = 0, rel_abund = 0)
+  ) |>
+  # Compute the mean relative abundance across replicates for each site and diel phase
+  group_by(site_name, diel_phase, order_top) |>
+  summarise(mean_rel_abund = mean(rel_abund, na.rm = TRUE), .groups = "drop_last") |>
+  # Re-normalize to ensure 100% stack per diel phase
+  mutate(mean_rel_abund = (mean_rel_abund / sum(mean_rel_abund)) * 100) |>
+  ungroup() |>
   mutate(
-    diel_phase                    = factor(diel_phase, levels = c("Midnight", "Dawn", "Noon", "Dusk")),
-    order_top                     = fct_reorder(order_top, mean_rel_abund, .fun = sum, .desc = TRUE),
-    order_top                     = fct_relevel(order_top, "Other", after = Inf)
+    diel_phase = factor(diel_phase, levels = c("Midnight", "Dawn", "Noon", "Dusk")),
+    order_top  = factor(order_top, levels = c(top_10_orders, "Other")),
+    order_top  = fct_relevel(order_top, "Other", after = Inf)
   )
+
+head(order_data_diel)
 
 # Create the plot with ggplot2
 ggplot(order_data_diel, aes(x = diel_phase, y = mean_rel_abund, fill = order_top))         +
@@ -1275,7 +1233,303 @@ ggsave(
 
 From this, we can see that *Pseudomonadales* is the dominant order in Ria de Alvor at all diel phases. In Pescalgarve, *Flavobacteriales*, *Cytophagales*, and *Pseudomonadales* share the dominance at all diel phases. The mean relative abundance of each order appears to be relatively stable across all diel phases in both environments, with the exception of the order *Bacillales*. This order of bacteria is found in low levels at dawn, noon, and dusk, but they have a peak at midnight. Midnight is the time point of nocturnal respiration. This group is possibly recruited for their function in this metabolic process.
 
-```{r 02_domtable, include = FALSE}
+### 2. Heatmap of relative abundance patterns
+
+This heatmap displays the relative abundance patterns of the top 30 bacterial genera associated with the *Ulva* epibiome across four diel phases (Dawn, Noon, Dusk, and Midnight) and both sites. The abundances are standardized across rows using the Z-score. A dark red box signifies strong relative enrichment abundance of the genus (Z ≥ +2) , white is the mean baseline abundance (Z ≈ 0), and dark blue is a strong relative depletion (Z ≤ -2). The genera are grouped by hierarchical clustering based on similar spatial and temporal abundance profiles over a 24-hour cycle.
+
+```{r 16_heatmap_diel}
+
+# Filter Ulva samples 
+ulva_clean <- lumilettuce |>
+  filter(
+    superkingdom == "Bacteria",
+    sample_type == "Ulva",
+    !is.na(site_name),
+    !is.na(diel_phase),
+    !is.na(genus),
+    !genus %in% c("Unknown", "Unclassified", ""),
+    count > 0
+  ) |>
+  # Sum duplicate entries per genus within each sample
+  group_by(sample_id, site_name, diel_phase, genus) |>
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop")
+
+# Identify the top 30 most abundant genera on Ulva
+top_genera <- ulva_clean |>
+  group_by(genus) |>
+  summarise(total_count = sum(count), .groups = "drop") |>
+  slice_max(order_by = total_count, n = 30) |>
+  pull(genus)
+
+# Calculate the mean relative abundance (%) per site and diel Phase
+ulva_rel <- ulva_clean |>
+  filter(genus %in% top_genera) |>
+  group_by(sample_id) |>
+  mutate(rel_abund = (count / sum(count)) * 100) |>
+  ungroup()
+
+# Average across biological replicates for each condition
+heat_df <- ulva_rel |>
+  group_by(genus, site_name, diel_phase) |>
+  summarise(mean_rel = mean(rel_abund, na.rm = TRUE), .groups = "drop") |>
+  complete(genus, site_name, diel_phase, fill = list(mean_rel = 0))
+
+# Construct matrix & calculate row-wise Z-scores
+
+heat_wide <- heat_df |>
+  mutate(
+    col_id = paste(site_name, diel_phase, sep = "__")
+  ) |>
+  pivot_wider(
+    id_cols     = genus,
+    names_from  = col_id,
+    values_from = mean_rel
+  ) |>
+  column_to_rownames("genus") |>
+  as.matrix()
+
+# Reorder columns chronologically per site
+ordered_cols <- c(
+  paste("Pescalgarve", c("Dawn", "Noon", "Dusk", "Midnight"), sep = "__"),
+  paste("Ria de Alvor", c("Dawn", "Noon", "Dusk", "Midnight"), sep = "__")
+)
+heat_wide <- heat_wide[, ordered_cols]
+
+z_matrix <- t(scale(t(heat_wide)))
+
+z_matrix[is.nan(z_matrix)] <- 0
+
+
+col_meta <- tibble(col_id = colnames(z_matrix)) |>
+  separate(col_id, into = c("Site", "Diel_Phase"), sep = "__")
+
+# Define categorical palette
+site_colors <- c("Pescalgarve" = "#008080", "Ria de Alvor" = "#DA70D6")
+diel_colors <- c(
+  "Midnight" = "#2C3E50", # Dark navy
+  "Dawn"     = "#E67E22", # Orange sunrise
+  "Noon"     = "#F1C40F", # Bright yellow
+  "Dusk"     = "#9B59B6"  # Purple dusk
+)
+
+top_anno <- HeatmapAnnotation(
+  `Site Name`  = col_meta$Site,
+  `Diel Phase` = factor(col_meta$Diel_Phase, levels = c("Dawn", "Noon", "Dusk", "Midnight")),
+  col = list(
+    `Site Name`  = site_colors,
+    `Diel Phase` = diel_colors
+  ),
+  annotation_name_side = "left",
+  annotation_legend_param = list(
+    `Site Name`  = list(title = "Site Name", title_gp = gpar(fontface = "bold")),
+    `Diel Phase` = list(title = "Diel Phase", title_gp = gpar(fontface = "bold"))
+  )
+)
+
+# Diverging color gradient for Z-scores (Blue -> White -> Red)
+col_fun <- colorRamp2(c(-2, 0, 2), c("#2166AC", "#F7F7F7", "#B2182B"))
+
+# Plot
+ht <- Heatmap(
+  z_matrix,
+  name               = "Row Z-score",
+  col                = col_fun,
+  top_annotation     = top_anno,
+  column_split       = col_meta$Site, # Visual vertical split between the two sites
+  cluster_columns    = FALSE,         # Keep chronological 24-hour cycle intact
+  cluster_rows       = TRUE,          # Cluster genera by temporal/spatial co-occurrence
+  clustering_distance_rows = "euclidean",
+  clustering_method_rows   = "complete",
+  show_column_names  = TRUE,
+  column_labels      = col_meta$Diel_Phase,
+  column_names_rot   = 45,
+  column_names_gp    = gpar(fontsize = 10, fontface = "bold"),
+  row_names_gp       = gpar(fontsize = 9, fontitalic = TRUE),
+  rect_gp            = gpar(col = "white", lwd = 0.5), # Grid border between cells
+  heatmap_legend_param = list(
+    title_gp         = gpar(fontface = "bold"),
+    legend_height    = unit(4, "cm")
+  )
+)
+
+
+dir.create("../output/figures", recursive = TRUE, showWarnings = FALSE)
+png("../output/figures/ulva_heatmap_spatial_diel.png", width = 9.5, height = 11, units = "in", res = 300)
+draw(ht, heatmap_legend_side = "right", annotation_legend_side = "right")
+dev.off()
+
+draw(ht)
+
+```
+
+The enriched genera in Pescalgarve are in the lower half of the heatmap, whereas they are in the upper half of the heatmap for Ria de Alvor.
+
+Bacillus shows high relative enrichment at midnight in both sites, and drops sharply during daytime. There is a dawn bloom at Ria de Alvor at dawn composed of : Pseudoalteromonas, Vibrio, and Alteromonas. The genera Glaciecola, Marinagarivorans, and Acinetobacter spike at noon in Ria de Alvor, whereas they decrease at that same timepoint in Pescalgarve. At dusk, Rhodobacteraceae surges at Pescalgarve along with Hyphomonadaceae_uncultured and Escherichia-Shigella at Ria de Alvor.
+
+### 3. PERMANOVA
+
+This PERMANOVA uses the adonis2 function from the vegan package to evaluate whether whole bacterial community composition changes across sampling site and diel phases. This is a two-way model which can look at the two factors, site name and diel phase, and their interaction.
+
+To avoid false positives caused by unequal dispersion, the assumption of homogeniety of multivariate dispersion must be met. The p-value must be greater than 0.05.
+
+If the interaction term is non-significant, the interaction term will be dropped and an additive model will be run to obtain the exact values for the main effects, as is best practice in statistical analysis.
+
+```{r 17_permanova_community}
+
+ulva_clean <- lumilettuce |>
+  filter(
+    superkingdom == "Bacteria",
+    sample_type  == "Ulva",
+    !is.na(site_name),
+    !is.na(diel_phase),
+    !is.na(genus),
+    !genus %in% c("Unknown", "Unclassified", ""),
+    count > 0
+  )
+
+# Extract matching metadata
+metadata_ulva <- ulva_clean |>
+  distinct(sample_id, site_name, diel_phase) |>
+  mutate(
+    diel_phase = factor(diel_phase, levels = c("Dawn", "Noon", "Dusk", "Midnight")),
+    site_name  = factor(site_name, levels = c("Pescalgarve", "Ria de Alvor"))
+  ) |>
+  arrange(sample_id)
+
+# Pivot into a strictly numeric community matrix (Samples x Genera)
+comm_matrix_ulva <- ulva_clean |>
+  group_by(sample_id, genus) |>
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(
+    id_cols     = sample_id,
+    names_from  = genus,
+    values_from = count,
+    values_fill = 0
+  ) |>
+  arrange(sample_id) |>
+  column_to_rownames("sample_id") |>
+  as.matrix()
+
+# Verify alignment
+stopifnot(identical(rownames(comm_matrix_ulva), metadata_ulva$sample_id))
+
+
+# ------------------------------------------------------------------------------
+# Compute dissimilarity matrices
+# ------------------------------------------------------------------------------
+# A. Bray-Curtis (abundance-weighted)
+dist_bc <- vegdist(comm_matrix_ulva, method = "bray")
+
+# B. Jaccard (incidence / presence-absence)
+dist_jacc <- vegdist(comm_matrix_ulva, method = "jaccard", binary = TRUE)
+
+
+# ------------------------------------------------------------------------------
+# Two-way factorial PERMANOVA (adonis2)
+# ------------------------------------------------------------------------------
+# by = "margin" tests marginal (Type III) effects so factor order does not bias results
+
+cat("\n=================== PERMANOVA: BRAY-CURTIS ===================\n")
+permanova_bc <- adonis2(
+  dist_bc ~ site_name * diel_phase,
+  data         = metadata_ulva,
+  permutations = 999,
+  by           = "margin"
+)
+print(permanova_bc)
+
+cat("\n=================== PERMANOVA: JACCARD ===================\n")
+permanova_jacc <- adonis2(
+  dist_jacc ~ site_name * diel_phase,
+  data         = metadata_ulva,
+  permutations = 999,
+  by           = "margin"
+)
+print(permanova_jacc)
+
+
+# ------------------------------------------------------------------------------
+# Multivariate dispersion (betadisper)
+# ------------------------------------------------------------------------------
+# Validate whether site differences are driven by centroid shifts or dispersion
+disp_site <- betadisper(dist_bc, metadata_ulva$site_name)
+cat("\n--- Dispersion Test: Site Name ---\n")
+print(anova(disp_site))
+
+disp_diel <- betadisper(dist_bc, metadata_ulva$diel_phase)
+cat("\n--- Dispersion Test: Diel Phase ---\n")
+print(anova(disp_diel))
+
+# Additive model to test main effects of site and diel phase
+fit_bc <- adonis2(dist_bc ~ site_name + diel_phase, data = metadata_ulva, permutations = 999, by = "margin")
+fit_jacc <- adonis2(dist_jacc ~ site_name + diel_phase, data = metadata_ulva, permutations = 999, by = "margin")
+
+# Create table 
+tidy_adonis <- function(mod, metric_name) {
+  as_tibble(mod, rownames = "Factor") |>
+    mutate(
+      Metric = metric_name,
+      Factor = dplyr::recode(Factor,
+        "site_name"  = "Site Name",
+        "diel_phase" = "Diel Phase",
+        "Residual"   = "Residuals",
+        "Total"      = "Total"
+      )
+    ) |>
+    rename(
+      Df         = Df,
+      SumOfSqs   = SumOfSqs,
+      R2         = R2,
+      F_stat     = F,
+      p_val      = `Pr(>F)`
+    ) |>
+    relocate(Metric, Factor)
+}
+
+# 3. Combine both metrics
+permanova_table_df <- bind_rows(
+  tidy_adonis(fit_bc, "Bray-Curtis"),
+  tidy_adonis(fit_jacc, "Jaccard")
+)
+
+# 4. Format with `gt`
+permanova_gt <- permanova_table_df |>
+  gt(groupname_col = "Metric")  |>
+  cols_label(
+    Factor   = md("**Source of Variation**"),
+    Df       = md("**Df**"),
+    SumOfSqs = md("**Sum of Squares**"),
+    R2       = md("**R²**"),
+    F_stat   = md("**Pseudo-F**"),
+    p_val    = md("**p-value**")
+  ) |>
+  fmt_number(columns = SumOfSqs, decimals = 3) |>
+  fmt_number(columns = R2, decimals = 3) |>
+  fmt_number(columns = F_stat, decimals = 2) |>
+  fmt_number(columns = p_val, decimals = 3) |>
+  sub_missing(missing_text = "—") |>
+  tab_options(
+    table.font.names = "Arial",
+    table.font.size = px(13),
+    heading.align = "left",
+    row_group.font.weight = "bold"
+  )
+
+# Display in RStudio Viewer
+permanova_gt
+
+gtsave(permanova_gt, "../output/tables/Table_X_PERMANOVA.png")
+```
+
+There is no interaction between site name and diel phase according to both distance metrics (Bray-Curtis: F3,64 = 0.68, R2 = 0.026, p-value = 0.916; Jaccard: F3,64 = 0.87, R2 = 0.035, p-value = 0.753). This suggests that the diel changes of the microbiome do not significantly diverge between sites. In other words, The diurnal temporal patterns are not significantly different in the aquaculture facility compared to the natural coastal lagoon.
+
+For the homogeneity of multivariate dispersion, the assumption is met for both variables (site name and diel phase) which confirms that the PERMANOVA tests are robust and unbiased.
+
+The additive model reveals sampling site to be a significant driver of the Ulva microbiome. Indeed, the epibiome differs both in abundance-weighted composition (Bray-Curtis) and membership/turnover (Jaccard). The effect size is larger in Bray-Curtis than in Jaccard (R2: 11.62% \> 8.13%), indicating that site differentiation is primarily driven by shifts in the relative abundances of shared core bacterial genera as well as some taxon replacement. As for diel phase, the model shows whole-community diel stability. Over a 24-hour cycle, the baseline composition remains resilient and stable (p-values \> 0.5).
+
+### 
+
+```{r 02_domtable, eval = FALSE}
 # 1. Prepare the Top 1 Genus data
 top_1_genus_data <- df |>
   filter(sample_type == "Ulva") |>
@@ -1328,7 +1582,7 @@ top_1_genus_table <- top_1_genus_data |>
 top_1_genus_table
 ```
 
-```{r 02_boxplot, include = FALSE}
+```{r 02_boxplot, eval = FALSE}
 
 # 1. Filter and prepare the data
 richness_data <- microbiome3 |>  # Use your cleaned data frame
@@ -1365,7 +1619,7 @@ ggplot(richness_data, aes(x = diel_phase, y = richness, fill = site_name)) +
 
 ```
 
-```{r 03_genera_table, include = FALSE}
+```{r 03_genera_table, eval = FALSE}
 # Top 3 genera per site/phase
 top_genera <- microbiome |>
   group_by(site_name, diel_phase, genus) |>
@@ -1376,7 +1630,7 @@ top_genera <- microbiome |>
 print(top_genera, n=27)
 ```
 
-```{r 05_pcoa_loc, include = FALSE}
+```{r 05_pcoa_loc, eval = FALSE}
 # 1. Clean and Prepare
 df <- microbiome |> 
   filter(sample_type == "Ulva", site_name != "Unknown") |>
@@ -1450,7 +1704,7 @@ plot_ordination(ps, ps_pcoa, color = "site_name", shape = "diel_phase") +
      
 ```
 
-```{r 06_pcoa_pescalgarve, include = FALSE}
+```{r 06_pcoa_pescalgarve, eval = FALSE}
 # 1. Subset the phyloseq object to only include Pescalgarve
 ps_pesc <- subset_samples(ps, site_name == "Pescalgarve")
 
@@ -1501,7 +1755,7 @@ plot_ordination(ps_pesc, ps_pcoa_pesc, color = "diel_phase") +
   )
 ```
 
-```{r 07_pcoa_ria, include = FALSE}
+```{r 07_pcoa_ria, eval = FALSE}
 # 1. Subset the phyloseq object to only include Ria do Alvor
 ps_pesc <- subset_samples(ps, site_name == "Ria do Alvor")
 
@@ -1552,7 +1806,7 @@ plot_ordination(ps_pesc, ps_pcoa_pesc, color = "diel_phase") +
   )
 ```
 
-```{r 08_pcoa_morphotype, include =FALSE}
+```{r 08_pcoa_morphotype, eval = FALSE}
 
 # 1. Prepare Metadata (Ensuring 'morphotype' is included this time)
 s_data <- df |>
