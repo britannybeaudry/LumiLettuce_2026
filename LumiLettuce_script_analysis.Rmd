@@ -36,6 +36,10 @@ library(ggsci)
 library(RColorBrewer) # to make figures
 library(ComplexHeatmap)
 library(circlize)
+library(ANCOMBC)
+library(mia)
+library(SingleCellExperiment)
+library(TreeSummarizedExperiment)
 
 # Use the function 'here' to create a path to tidy data set
 data_tidy_path <- here::here("data/processed") 
@@ -1529,15 +1533,9 @@ The additive model reveals sampling site to be a significant driver of the Ulva 
 
 ### 4. Differential abundance analysis
 
-The differential abundance analysis will revela which bacterial genera are significantly enriched during the daytime light peak (Noon) versus the nocturnal phase (Midnight). The method used is the ANCOM-BC2 because it is the gold standard for compositional sequencing count data and adjusts for sampling depth while accounting for covariates (site name). Basically, this method acccounts for sampling fraction differences, handles zero inflation, and includes site name as a covariate.
+The differential abundance analysis will reveal which bacterial genera are significantly enriched during the daytime light peak (Noon) versus the nocturnal phase (Midnight). The method used is the ANCOM-BC2 because it is the gold standard for compositional sequencing count data and adjusts for sampling depth while accounting for covariates (site name). Basically, this method acccounts for sampling fraction differences, handles zero inflation, and includes site name as a covariate.
 
-```{r}
-# If not installed:
-# BiocManager::install("ANCOMBC")
-library(tidyverse)
-library(ANCOMBC)
-library(mia)
-library(SingleCellExperiment)
+```{r 18_differential_abundance}
 
 diel_comp_clean <- lumilettuce |>
   filter(
@@ -1552,7 +1550,7 @@ diel_comp_clean <- lumilettuce |>
   group_by(sample_id, site_name, diel_phase, genus) |>
   summarise(count = sum(count, na.rm = TRUE), .groups = "drop")
 
-# Build count matrix (Genera x Samples)
+# Build numeric count matrix (Genera x Samples)
 count_mat <- diel_comp_clean |>
   pivot_wider(
     id_cols     = genus,
@@ -1563,409 +1561,108 @@ count_mat <- diel_comp_clean |>
   column_to_rownames("genus") |>
   as.matrix()
 
-# Build matching metadata
+# Build metadata aligned with columns of count_mat
 sample_meta <- diel_comp_clean |>
   distinct(sample_id, site_name, diel_phase) |>
   mutate(
-    # Set Midnight as reference: positive logFC means enriched at Noon
+    # Set Midnight as reference (positive LFC = enriched at Noon)
     diel_phase = factor(diel_phase, levels = c("Midnight", "Noon")),
     site_name  = factor(site_name, levels = c("Pescalgarve", "Ria de Alvor"))
   ) |>
   arrange(match(sample_id, colnames(count_mat))) |>
   column_to_rownames("sample_id")
 
-# Create TreeSummarizedExperiment / SingleCellExperiment container
+# Verify sample matching
+stopifnot(identical(colnames(count_mat), rownames(sample_meta)))
+
+# Construct TreeSummarizedExperiment
 tse <- TreeSummarizedExperiment(
   assays  = list(counts = count_mat),
   colData = DataFrame(sample_meta)
 )
 
-
-# Run ANCOM-BC2 model (controlling for site_name)
-
+# ------------------------------------------------------------------------------
+# 2. Run ANCOM-BC2 (Controlling for Site)
+# ------------------------------------------------------------------------------
 ancom_res <- ancombc2(
   data         = tse,
   assay_name   = "counts",
   tax_level    = NULL,
   fix_formula  = "site_name + diel_phase",
   p_adj_method = "BH",
-  prv_cut      = 0.10, # Keep taxa present in >= 10% of samples
+  prv_cut      = 0.10, # Filter taxa absent in > 90% of samples
   group        = "diel_phase",
   struc_zero   = TRUE,
   neg_lb       = TRUE
 )
 
+# ------------------------------------------------------------------------------
 # 3. Extract Differentially Abundant Taxa
+# ------------------------------------------------------------------------------
 res_df <- ancom_res$res |>
   select(
     taxon,
-    lfc_Noon     = lfc_diel_phaseNoon,
-    se_Noon      = se_diel_phaseNoon,
-    W_Noon       = W_diel_phaseNoon,
-    p_val_Noon   = p_val_diel_phaseNoon,
-    q_val_Noon   = q_val_diel_phaseNoon,
-    diff_Noon    = diff_diel_phaseNoon
+    lfc_Noon  = lfc_diel_phaseNoon,
+    se_Noon   = se_diel_phaseNoon,
+    W_Noon    = W_diel_phaseNoon,
+    p_Noon    = p_diel_phaseNoon,
+    q_Noon    = q_diel_phaseNoon,
+    diff_Noon = diff_diel_phaseNoon
   ) |>
-  arrange(q_val_Noon)
+  arrange(q_Noon)
 
-# Filter significant taxa (FDR < 0.05)
+# Filter statistically significant taxa (adjusted p-value / FDR < 0.05)
 sig_genera <- res_df |>
-  filter(q_val_Noon < 0.05) |>
-  mutate(Enrichment = if_else(lfc_Noon > 0, "Noon (Light Peak)", "Midnight (Dark)"))
-
-head(sig_genera, 15)
-```
-
-### 5. Lollipop plot
-
-This is the plot to visualize the differentially enriched genera from the previous figure. This plot type is very similar to a barplot, except the bar is transformed into a line and dot.
-
-```{r}
-# Lollipop plot of significant genera by log2 fold change
-ggplot(sig_deseq |> slice_max(order_by = abs(log2FoldChange), n = 20),
-       aes(x = reorder(genus, log2FoldChange), y = log2FoldChange, fill = Enrichment)) +
-  geom_col(width = 0.6, alpha = 0.85, colour = "black", linewidth = 0.3) +
-  coord_flip() +
-  scale_fill_manual(values = c("Noon" = "#F1C40F", "Midnight" = "#2C3E50")) +
-  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
-  theme_classic(base_size = 12) +
-  labs(
-    title    = "Differentially Enriched Genera: Noon vs. Midnight",
-    subtitle = "Ulva Epibiome (controlling for site effect; FDR < 0.05)",
-    x        = "Bacterial Genus",
-    y        = "Log2 Fold Change (Noon / Midnight)",
-    fill     = "Enriched In"
-  ) +
-  theme(
-    axis.text.y  = element_text(face = "italic"),
-    plot.title   = element_text(face = "bold"),
-    legend.title = element_text(face = "bold")
-  )
-```
-
-```{r 02_domtable, eval = FALSE}
-# 1. Prepare the Top 1 Genus data
-top_1_genus_data <- df |>
-  filter(sample_type == "Ulva") |>
-  # Average replicates to get mean relative abundance per Genus
-  group_by(sample_id, site_name, diel_phase, genus) |>
-  summarise(total_count = sum(count), .groups = "drop") |>
-  group_by(sample_id) |>
-  mutate(rel_abund = (total_count / sum(total_count)) * 100) |>
-  group_by(site_name, diel_phase, genus) |>
-  summarise(mean_rel_abund = mean(rel_abund), .groups = "drop") |>
-  # Select the winner (#1) for each Site and Time
-  group_by(site_name, diel_phase) |>
-  slice_max(mean_rel_abund, n = 1) |>
-  ungroup()
-
-# 2. Build the Pretty GT Table
-top_1_genus_table <- top_1_genus_data |>
-  gt(groupname_col = "site_name") |>
-  tab_header(
-    title = md("**Dominant Community Members**"),
-    subtitle = "The #1 Bacterial Genus by Mean Relative Abundance"
-  ) |>
-  fmt_number(
-    columns = mean_rel_abund,
-    decimals = 1,
-    pattern = "{x}%" 
-  ) |>
-  cols_label(
-    diel_phase = "Time of Day",
-    genus = "Dominant Genus",
-    mean_rel_abund = "Avg. Abundance"
-  ) |>
-  tab_options(
-    heading.background.color = "#005f73", # Burgundy
-    column_labels.background.color = "#f8f9fa",
-    table.font.size = px(16),
-    row_group.font.weight = "bold"
-  ) |>
-  # Style headers to match your plot
-  tab_style(
-    style = cell_text(color = "#005f73"), 
-    locations = cells_row_groups(groups = "Pescalgarve")
-  ) |>
-  tab_style(
-    style = cell_text(color = "orange"), 
-    locations = cells_row_groups(groups = "Ria do Alvor")
-  )
-
-# 3. View the table
-top_1_genus_table
-```
-
-```{r 02_boxplot, eval = FALSE}
-
-# 1. Filter and prepare the data
-richness_data <- microbiome3 |>  # Use your cleaned data frame
-  filter(
-    site_name != "Unknown", 
-    diel_phase != "Unknown",
-    genus != "Unknown",       # Also removes "Unknown" from the richness count
-    sample_type == "Ulva"     # Focusing on the Ulva story
-  ) |>
-  # Set chronological order for the X-axis
-  mutate(diel_phase = factor(diel_phase, 
-                             levels = c("Dawn", "Noon", "Dusk", "Midnight"))) |>
-  group_by(sample_id, site_name, diel_phase) |>
-  summarise(richness = n_distinct(genus), .groups = "drop")
-
-# 2. Create the Boxplot with Ocean Theme
-ggplot(richness_data, aes(x = diel_phase, y = richness, fill = site_name)) +
-  geom_boxplot(alpha = 0.8, outlier.shape = 21, outlier.fill = "white") +
-  # Custom Ocean Colors: Deep Teal and Ocean Blue
-  scale_fill_manual(values = c("Pescalgarve" = "#005f73", 
-                               "Ria do Alvor" = "lightblue")) +
-  theme_minimal() +
-  labs(
-    y = "Number of Genera Observed",
-    x = "Diel Phase",
-    fill = "Site Location"
-  ) +
-  theme(
-    panel.grid.major.x = element_blank(), # Cleans up the background
-    legend.position = "top",
-    plot.title = element_text(face = "bold", size = 14),
-    axis.title = element_text(size = 11)
-  )
-
-```
-
-```{r 03_genera_table, eval = FALSE}
-# Top 3 genera per site/phase
-top_genera <- microbiome |>
-  group_by(site_name, diel_phase, genus) |>
-  summarise(sum_count = sum(count), .groups = "drop") |>
-  group_by(site_name, diel_phase) |>
-  slice_max(sum_count, n = 3)
-
-print(top_genera, n=27)
-```
-
-```{r 05_pcoa_loc, eval = FALSE}
-# 1. Clean and Prepare
-df <- microbiome |> 
-  filter(sample_type == "Ulva", site_name != "Unknown") |>
-  # Crucial: Convert metadata to factors here so the plot legend is ordered correctly
+  filter(diff_Noon == TRUE, q_Noon < 0.05) |>
   mutate(
-    diel_phase = factor(diel_phase, levels = c("Dawn", "Noon", "Dusk", "Midnight")),
-    site_name = as.factor(site_name)
-  )
+    Enrichment = if_else(lfc_Noon > 0, "Noon (Light Peak)", "Midnight (Dark)")
+  ) |>
+  arrange(desc(lfc_Noon))
 
-# A. OTU Table (Counts)
-otu_mat <- df |>
-  select(sample_id, genus, count) |>
-  group_by(sample_id, genus) |> 
-  summarise(count = sum(count), .groups = "drop") |> # Ensure no duplicate genus/sample rows
-  pivot_wider(names_from = genus, values_from = count, values_fill = 0) |>
-  column_to_rownames("sample_id") |>
-  as.matrix()
+print(head(sig_genera, 15))
+```
 
-# B. Tax Table (Classification)
-tax_mat <- df |>
-  select(superkingdom, kingdom, phylum, class, order, family, genus) |>
-  distinct(genus, .keep_all = TRUE) |>
-  column_to_rownames("genus") |>
-  as.matrix()
+The table returns 0 rows because no bacterial genjus reached the strict false discovery rate cutoff (q_Noon \< 0.05) after Benjamini-Hochberg (BH) multiple testing correction across all tested genera. This aligns with the findings of the PERMANOVA, supporting the fact that the whole community does not experience a massive turnover across diel phases.
 
-# C. Sample Data (Metadata) - MUST be wrapped in sample_data()
-# We ensure the row names match the otu_mat row names exactly
-s_data <- df |>
-  select(sample_id, site_name, morphotype, diel_phase) |>
-  distinct() |>
-  column_to_rownames("sample_id")
+We can restrict testing to taxa present in at least 30% of samples to drastically reduce the correction burden. Filtering out the rare or sporadic taxa will reduce the statistical noise and is standard practice in microbiome bioinformatics.
 
-# D. Build the Phyloseq Object
-# We explicitly convert components to phyloseq classes
-ps <- phyloseq(
-  otu_table(otu_mat, taxa_are_rows = FALSE), 
-  sample_data(s_data), 
-  tax_table(tax_mat)
+```{r 19_prevalent_taxa}
+
+# 1. Identify prevalent taxa (present in >= 30% of samples)
+prevalent_taxa <- diel_comp_clean |>
+  group_by(genus) |>
+  summarise(prevalence = n_distinct(sample_id) / 36) |>
+  filter(prevalence >= 0.30) |>
+  pull(genus)
+
+# 2. Run ANCOM-BC2 on this focused core set
+tse_core <- tse[rownames(tse) %in% prevalent_taxa, ]
+
+ancom_core <- ancombc2(
+  data         = tse_core,
+  assay_name   = "counts",
+  tax_level    = NULL,
+  fix_formula  = "site_name + diel_phase",
+  p_adj_method = "BH",
+  group        = "diel_phase",
+  struc_zero   = TRUE,
+  neg_lb       = TRUE
 )
 
-# --- VERIFICATION ---
-# Run this to make sure 'site_name' is actually inside the object:
-sample_variables(ps) 
+# Extract results
+res_core <- ancom_core$res |>
+  select(
+    taxon,
+    lfc_Noon  = lfc_diel_phaseNoon,
+    se_Noon   = se_diel_phaseNoon,
+    W_Noon    = W_diel_phaseNoon,
+    p_Noon    = p_diel_phaseNoon,
+    q_Noon    = q_diel_phaseNoon,
+    diff_Noon = diff_diel_phaseNoon
+  ) |>
+  arrange(p_Noon)
 
-# --- PLOTTING ---
-# 2. Run Ordination
-ps_pcoa <- ordinate(ps, method = "PCoA", distance = "bray")
-
-# 3. Plot (Notice the quotes around "site_name")
-plot_ordination(ps, ps_pcoa, color = "site_name", shape = "diel_phase") +
-  geom_point(size = 4, alpha = 0.8) +
-  stat_ellipse(aes(fill = site_name), geom = "polygon", alpha = 0.1, show.legend = FALSE) +
-  scale_color_manual(values = c("Pescalgarve" = "#005f73", "Ria do Alvor" = "orange")) +
-  scale_fill_manual(values = c("Pescalgarve" = "#005f73", "Ria do Alvor" = "orange")) +
-  scale_shape_manual(name = "Time of Day", values = c(
-    "Dawn"     = 24, # Triangle Up
-    "Noon"     = 21, # Circle
-    "Dusk"     = 25, # Triangle Down
-    "Midnight" = 8   # Star
-  )) +
-  theme_minimal() +
-  labs(
-    color = "Sampling Site",   # Renames the color legend
-    shape = "Time of Day",     # Renames the shape legend
-  ) +
-  theme(
-    plot.title = element_text(face = "bold", size = 14),
-    legend.title = element_text(face = "bold") # Makes legend titles stand out
-  )
-
-     
+head(res_core, 20)
 ```
 
-```{r 06_pcoa_pescalgarve, eval = FALSE}
-# 1. Subset the phyloseq object to only include Pescalgarve
-ps_pesc <- subset_samples(ps, site_name == "Pescalgarve")
-
-# 2. Re-run the ordination
-ps_pcoa_pesc <- ordinate(ps_pesc, method = "PCoA", distance = "bray")
-
-# 3. Plot with matching Ellipses and a MERGED legend
-plot_ordination(ps_pesc, ps_pcoa_pesc, color = "diel_phase") +
-  # Map color, shape, and fill to the same variable
-  geom_point(aes(shape = diel_phase, fill = diel_phase), size = 6, alpha = 0.9) +
-  
-  # Ellipses (show.legend = FALSE keeps the shaded area out of the tiny legend icons)
-  stat_ellipse(aes(fill = diel_phase), geom = "polygon", alpha = 0.1, show.legend = FALSE) +
-  
-  # 1. Shape Scale (The Name "Time of Day" must match exactly in all three)
-  scale_shape_manual(name = "Time of Day", values = c(
-    "Dawn"     = 24, # Triangle Up
-    "Noon"     = 21, # Circle
-    "Dusk"     = 25, # Triangle Down
-    "Midnight" = 8   # Star
-  )) +
-  
-  # 2. Color Scale
-  scale_color_manual(name = "Time of Day", values = c(
-    "Dawn"     = "#C8A2C8", # Lilac
-    "Noon"     = "#BDB76B", # Khaki
-    "Dusk"     = "#800020", # Burgundy
-    "Midnight" = "#2E2E2E"  # Dark Grey
-  )) +
-  
-  # 3. Fill Scale
-  scale_fill_manual(name = "Time of Day", values = c(
-    "Dawn"     = "#C8A2C8", 
-    "Noon"     = "#BDB76B", 
-    "Dusk"     = "#800020", 
-    "Midnight" = "#2E2E2E"
-  )) +
-  
-  theme_minimal() +
-  labs(
-    x = "Axis 1",
-    y = "Axis 2"
-  ) +
-  theme(
-    plot.title = element_text(face = "bold", size = 14),
-    legend.title = element_text(face = "bold"),
-    legend.position = "right" # You can change this to "bottom" if you want more width
-  )
-```
-
-```{r 07_pcoa_ria, eval = FALSE}
-# 1. Subset the phyloseq object to only include Ria do Alvor
-ps_pesc <- subset_samples(ps, site_name == "Ria do Alvor")
-
-# 2. Re-run the ordination
-ps_pcoa_pesc <- ordinate(ps_pesc, method = "PCoA", distance = "bray")
-
-# 3. Plot with matching Ellipses and a MERGED legend
-plot_ordination(ps_pesc, ps_pcoa_pesc, color = "diel_phase") +
-  # Map color, shape, and fill to the same variable
-  geom_point(aes(shape = diel_phase, fill = diel_phase), size = 6, alpha = 0.9) +
-  
-  # Ellipses (show.legend = FALSE keeps the shaded area out of the tiny legend icons)
-  stat_ellipse(aes(fill = diel_phase), geom = "polygon", alpha = 0.1, show.legend = FALSE) +
-  
-  # 1. Shape Scale (The Name "Time of Day" must match exactly in all three)
-  scale_shape_manual(name = "Time of Day", values = c(
-    "Dawn"     = 24, # Triangle Up
-    "Noon"     = 21, # Circle
-    "Dusk"     = 25, # Triangle Down
-    "Midnight" = 8   # Star
-  )) +
-  
-  # 2. Color Scale
-  scale_color_manual(name = "Time of Day", values = c(
-    "Dawn"     = "#C8A2C8", # Lilac
-    "Noon"     = "#BDB76B", # Khaki
-    "Dusk"     = "#800020", # Burgundy
-    "Midnight" = "#2E2E2E"  # Dark Grey
-  )) +
-  
-  # 3. Fill Scale
-  scale_fill_manual(name = "Time of Day", values = c(
-    "Dawn"     = "#C8A2C8", 
-    "Noon"     = "#BDB76B", 
-    "Dusk"     = "#800020", 
-    "Midnight" = "#2E2E2E"
-  )) +
-  
-  theme_minimal() +
-  labs(
-    x = "Axis 1",
-    y = "Axis 2"
-  ) +
-  theme(
-    plot.title = element_text(face = "bold", size = 14),
-    legend.title = element_text(face = "bold"),
-    legend.position = "right" # You can change this to "bottom" if you want more width
-  )
-```
-
-```{r 08_pcoa_morphotype, eval = FALSE}
-
-# 1. Prepare Metadata (Ensuring 'morphotype' is included this time)
-s_data <- df |>
-  select(sample_id, site_name, diel_phase, morphotype) |> 
-  distinct() |>
-  column_to_rownames("sample_id")
-
-# 2. Rebuild the Phyloseq Object
-ps <- phyloseq(
-  otu_table(otu_mat, taxa_are_rows = FALSE), 
-  sample_data(s_data), 
-  tax_table(tax_mat)
-)
-
-# 3. Run Ordination (Default is Axis 1 and 2)
-ps_pcoa <- ordinate(ps, method = "PCoA", distance = "bray")
-
-# 4. Create the Plot
-plot_ordination(ps, ps_pcoa, color = "morphotype", shape = "diel_phase") +
-  # Ellipses in the background
-  stat_ellipse(aes(fill = morphotype), geom = "polygon", alpha = 0.1, show.legend = FALSE) +
-  
-  # Points with celestial shapes and colors
-  geom_point(aes(fill = morphotype), size = 5, stroke = 1, alpha = 0.9) +  
-  
-  # Colors for Morphotypes
-  scale_color_manual(values = c("Broad Blade" = "#800020", "Narrow Thalli" = "#BDB76B", "Filamentous" = "#C8A2C8")) +
-  scale_fill_manual(values = c("Broad Blade" = "#800020", "Narrow Thalli" = "#BDB76B", "Filamentous" = "#C8A2C8")) +
-  
-  # Celestial Shape Mapping
-  scale_shape_manual(values = c(
-    "Dawn"     = 24, # Triangle Up
-    "Noon"     = 21, # Circle
-    "Dusk"     = 25, # Triangle Down
-    "Midnight" = 8   # Star
-  )) +
-  
-  theme_minimal() +
-  labs(
-    color = "Morphotype",
-    fill = "Morphotype",
-    shape = "Time of Day"
-  ) +
-  # Ensures the legend icons match the points
-  guides(fill = "none", color = guide_legend(override.aes = list(shape = 21)))
-
-
-```
+Several taxa show marked shifts in effect size and unadjusted significance (p \< 0.01). Nocturnal enrichment (negative log-fold change (lfc)) was most pronounced in Methylotenera (LFC = -1.122, unadjusted p = 0.0004, q = 0.094) and Bacillus (LFC = -1.312, unadjusted p = 0.0019, q = 0.238). The peak midday irradiance favored Sphingobacterium (LFC = 0.767, unadjusted p = 0.0090, q = 0.251), Algitalea (LFC = 0.704, unadjusted p = 0.0129, q = 0.303), Planktomarina (LFC = 0.647, unadjusted p = 0.0079, q = 0.251), and uncultured Marinifilaceae (LFC = 0.637, unadjusted p = 0.0057, q = 0.251).
