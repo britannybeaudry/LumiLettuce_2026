@@ -1527,7 +1527,121 @@ For the homogeneity of multivariate dispersion, the assumption is met for both v
 
 The additive model reveals sampling site to be a significant driver of the Ulva microbiome. Indeed, the epibiome differs both in abundance-weighted composition (Bray-Curtis) and membership/turnover (Jaccard). The effect size is larger in Bray-Curtis than in Jaccard (R2: 11.62% \> 8.13%), indicating that site differentiation is primarily driven by shifts in the relative abundances of shared core bacterial genera as well as some taxon replacement. As for diel phase, the model shows whole-community diel stability. Over a 24-hour cycle, the baseline composition remains resilient and stable (p-values \> 0.5).
 
-### 
+### 4. Differential abundance analysis
+
+The differential abundance analysis will revela which bacterial genera are significantly enriched during the daytime light peak (Noon) versus the nocturnal phase (Midnight). The method used is the ANCOM-BC2 because it is the gold standard for compositional sequencing count data and adjusts for sampling depth while accounting for covariates (site name). Basically, this method acccounts for sampling fraction differences, handles zero inflation, and includes site name as a covariate.
+
+```{r}
+# If not installed:
+# BiocManager::install("ANCOMBC")
+library(tidyverse)
+library(ANCOMBC)
+library(mia)
+library(SingleCellExperiment)
+
+diel_comp_clean <- lumilettuce |>
+  filter(
+    superkingdom == "Bacteria",
+    sample_type  == "Ulva",
+    diel_phase %in% c("Midnight", "Noon"),
+    !is.na(site_name),
+    !is.na(genus),
+    !genus %in% c("Unknown", "Unclassified", ""),
+    count > 0
+  ) |>
+  group_by(sample_id, site_name, diel_phase, genus) |>
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop")
+
+# Build count matrix (Genera x Samples)
+count_mat <- diel_comp_clean |>
+  pivot_wider(
+    id_cols     = genus,
+    names_from  = sample_id,
+    values_from = count,
+    values_fill = 0
+  ) |>
+  column_to_rownames("genus") |>
+  as.matrix()
+
+# Build matching metadata
+sample_meta <- diel_comp_clean |>
+  distinct(sample_id, site_name, diel_phase) |>
+  mutate(
+    # Set Midnight as reference: positive logFC means enriched at Noon
+    diel_phase = factor(diel_phase, levels = c("Midnight", "Noon")),
+    site_name  = factor(site_name, levels = c("Pescalgarve", "Ria de Alvor"))
+  ) |>
+  arrange(match(sample_id, colnames(count_mat))) |>
+  column_to_rownames("sample_id")
+
+# Create TreeSummarizedExperiment / SingleCellExperiment container
+tse <- TreeSummarizedExperiment(
+  assays  = list(counts = count_mat),
+  colData = DataFrame(sample_meta)
+)
+
+
+# Run ANCOM-BC2 model (controlling for site_name)
+
+ancom_res <- ancombc2(
+  data         = tse,
+  assay_name   = "counts",
+  tax_level    = NULL,
+  fix_formula  = "site_name + diel_phase",
+  p_adj_method = "BH",
+  prv_cut      = 0.10, # Keep taxa present in >= 10% of samples
+  group        = "diel_phase",
+  struc_zero   = TRUE,
+  neg_lb       = TRUE
+)
+
+# 3. Extract Differentially Abundant Taxa
+res_df <- ancom_res$res |>
+  select(
+    taxon,
+    lfc_Noon     = lfc_diel_phaseNoon,
+    se_Noon      = se_diel_phaseNoon,
+    W_Noon       = W_diel_phaseNoon,
+    p_val_Noon   = p_val_diel_phaseNoon,
+    q_val_Noon   = q_val_diel_phaseNoon,
+    diff_Noon    = diff_diel_phaseNoon
+  ) |>
+  arrange(q_val_Noon)
+
+# Filter significant taxa (FDR < 0.05)
+sig_genera <- res_df |>
+  filter(q_val_Noon < 0.05) |>
+  mutate(Enrichment = if_else(lfc_Noon > 0, "Noon (Light Peak)", "Midnight (Dark)"))
+
+head(sig_genera, 15)
+```
+
+### 5. Lollipop plot
+
+This is the plot to visualize the differentially enriched genera from the previous figure. This plot type is very similar to a barplot, except the bar is transformed into a line and dot.
+
+```{r}
+# Lollipop plot of significant genera by log2 fold change
+ggplot(sig_deseq |> slice_max(order_by = abs(log2FoldChange), n = 20),
+       aes(x = reorder(genus, log2FoldChange), y = log2FoldChange, fill = Enrichment)) +
+  geom_col(width = 0.6, alpha = 0.85, colour = "black", linewidth = 0.3) +
+  coord_flip() +
+  scale_fill_manual(values = c("Noon" = "#F1C40F", "Midnight" = "#2C3E50")) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+  theme_classic(base_size = 12) +
+  labs(
+    title    = "Differentially Enriched Genera: Noon vs. Midnight",
+    subtitle = "Ulva Epibiome (controlling for site effect; FDR < 0.05)",
+    x        = "Bacterial Genus",
+    y        = "Log2 Fold Change (Noon / Midnight)",
+    fill     = "Enriched In"
+  ) +
+  theme(
+    axis.text.y  = element_text(face = "italic"),
+    plot.title   = element_text(face = "bold"),
+    legend.title = element_text(face = "bold")
+  )
+```
 
 ```{r 02_domtable, eval = FALSE}
 # 1. Prepare the Top 1 Genus data
